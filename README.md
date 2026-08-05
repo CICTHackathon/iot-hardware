@@ -10,16 +10,9 @@ This repository contains the **edge tier** of a two-tier smart-workplace access 
 
 The architecture separates *decision* from *enforcement*, following the reference model established by NIST SP 800-162 for Attribute-Based Access Control (ABAC) [1] and the XACML functional decomposition [2]:
 
-- The **Policy Decision Point (PDP)** — an LLM-mediated rule engine that evaluates natural-language organisational policy against structured request attributes — resides in the companion repository, `<org>/smart-access-policy`.
-- The **Policy Enforcement Point (PEP)**, the **Policy Information Point (PIP)** and the **movement recording subsystem** — that is, everything that touches copper, silicon and a door latch — reside **here**.
-
-> [!TIP]
-> `<org>/smart-access-policy` is a placeholder. Substitute the actual companion repository URL before publication.
-
+- The **Policy Decision Point (PDP)**, an LLM-mediated rule engine that evaluates natural-language organisational policy against structured request attributes.
+- The **Policy Enforcement Point (PEP)**, the **Policy Information Point (PIP)** and the **movement recording subsystem**.
 Concretely, this repository implements a **laboratory-scale mini gateway**: an Arduino UNO R3 node performing multi-factor credential capture (RFID + PIN) and electromechanical actuation, coupled to an ESP32-CAM node performing event-triggered motion recording, derived from the `ESP32-CAM_MJPEG2SD` firmware [3]. The credential-capture logic is inspired by the BanLinhKien RC522 door-lock reference project [4], which is extended here from a stand-alone hard-coded lock into a network-attached, policy-governed, auditable enforcement node.
-
-> [!CAUTION]
-> **Scope.** This is a *simulation* platform — a bench-top gateway intended for research, teaching and protocol validation. It is not certified for life-safety egress and must not be deployed as the sole control on a fire-egress path. Mechanical free egress takes precedence over every policy in the decision tier.
 
 > [!CAUTION]
 > **Credential strength.** An RC522 UID is an *identifier*, not a *secret*: MIFARE Classic UIDs are trivially cloned, and the Crypto-1 cipher has been broken in the open literature since 2008 [5]. The PIN factor and the visual attestation exist precisely because the card carries no weight on its own. Any field deployment requires cryptographic card authentication (DESFire EV2/EV3 or equivalent).
@@ -60,7 +53,7 @@ The division of responsibility is deliberate and strict:
 | Audit retention | Decision | Must be tamper-evident and outlive the device |
 
 > [!IMPORTANT]
-> The edge node **never** stores organisational policy. It holds only a short-lived *cached authorisation set*, bounded in size and TTL, used to sustain degraded operation during a network partition. On any cache miss the node fails **secure** — it denies.
+> The edge node **never** stores organisational policy. It holds only a short-lived *cached authorisation set*, bounded in size and TTL, used to sustain degraded operation during a network partition. On any cache miss the node fails **secure** when it denies.
 
 ---
 
@@ -101,11 +94,8 @@ Derived from the reference wiring of [4] and retained for interoperability with 
 | Servo signal | A0 | Driven as a digital output |
 | LCD `SDA` / `SCL` | A4 / A5 | Shared I²C bus |
 
-> [!CAUTION]
-> The RC522 is **not 5 V tolerant**. Powering it from the UNO's 5 V rail, or driving its SPI lines at 5 V without series resistors, will destroy the module.
-
 > [!NOTE]
-> **Pin budget.** The ATmega328P exhausts its I/O on this configuration. The reference design [4] declares only three keypad columns, so the fourth column of a 4×4 keypad (`A`, `B`, `C`, `D`) is physically present but unscanned — the device behaves as a 4×3 keypad. This project accepts that constraint rather than silently changing the reference wiring, and instead assigns the two soft keys the system needs (`*` = clear, `#` = submit) to the surviving columns. Reclaiming the fourth column requires either an I/O expander on the existing I²C bus (recommended: PCF8574 at a second address) or migration of the enforcement node to an MCU with a larger port map.
+> **Pin budget.** The RC522 is **not 5 V tolerant**. Powering it from the UNO's 5 V rail, or driving its SPI lines at 5 V without series resistors, will destroy the module. The ATmega328P exhausts its I/O on this configuration. The reference design [4] declares only three keypad columns, so the fourth column of a 4×4 keypad (`A`, `B`, `C`, `D`) is physically present but unscanned — the device behaves as a 4×3 keypad. This project accepts that constraint rather than silently changing the reference wiring, and instead assigns the two soft keys the system needs (`*` = clear, `#` = submit) to the surviving columns. Reclaiming the fourth column requires either an I/O expander on the existing I²C bus (recommended: PCF8574 at a second address) or migration of the enforcement node to an MCU with a larger port map.
 
 ### 3.3 Inter-node Interface
 
@@ -118,10 +108,7 @@ Because no general-purpose pins remain, the UNO↔ESP32 link is carried on the *
 | `GND` | GND | GND | Common reference |
 
 > [!WARNING]
-> Level shifting is required: the ESP32 is a 3.3 V part. A bidirectional MOSFET level translator is used on `SDA`/`SCL`; the trigger line uses a resistive divider.
-
-> [!NOTE]
-> GPIO 12 and 13 are only available because `ESP32-CAM_MJPEG2SD` is configured for **1-line SD (`SD_MMC` 1-bit) mode**, which releases the SDIO data lines. This is the stock configuration of that firmware [3].
+> Level shifting is required: the ESP32 is a 3.3 V part. A bidirectional MOSFET level translator is used on `SDA`/`SCL`; the trigger line uses a resistive divider. GPIO 12 and 13 are only available because `ESP32-CAM_MJPEG2SD` is configured for **1-line SD (`SD_MMC` 1-bit) mode**, which releases the SDIO data lines. This is the stock configuration of that firmware [3].
 
 ---
 
@@ -192,9 +179,6 @@ The system distinguishes three observable classes, only the first of which is a 
 ---
 
 ## 5. Project Structure
-
-> [!NOTE]
-> The repository is at an early stage. The tree below is the **target** layout, not a description of files already committed.
 
 ```
 iot-hardware/
