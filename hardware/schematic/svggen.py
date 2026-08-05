@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Generate the breadboard and schematic SVG sources for the smart gateway.
+Generate the breadboard SVG source for the smart gateway bench wiring.
+
+Only the breadboard view is generated here; the schematic is maintained by hand
+in EAGLE as smart-gateway.sch. Re-run after any change to the pin assignment
+in README.md section 4.2. Dependency-free: emits SVG text directly.
 """
 
 import os
@@ -140,12 +144,13 @@ def header(x, y, n, pitch=24, horiz=True, w=13, h=13):
             rect(x - 4, y + i * pitch - 1, w * 0.62, h * 0.62, "#c9ccd1", rx=1)
 
 
-def svg_open(w, h, title):
+def svg_open(w, h, title, view=None):
     _out.clear()
-    add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
-        f'viewBox="0 0 {w} {h}">')
+    vx, vy, vw, vh = view or (0, 0, w, h)
+    add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{vw}" height="{vh}" '
+        f'viewBox="{vx} {vy} {vw} {vh}">')
     add(f'<title>{esc(title)}</title>')
-    rect(0, 0, w, h, C["bg"])
+    rect(vx, vy, vw, vh, C["bg"])
 
 
 def svg_close(path):
@@ -191,10 +196,8 @@ WIRE_KEY = [
 # ========================================================= BREADBOARD VIEW ===
 def breadboard_view(path):
     W, H = 1700, 1200
-    svg_open(W, H, "Smart Gateway - breadboard view")
-    frame(W, H, "Smart Gateway - Breadboard View",
-          "Arduino UNO R3 enforcement node with RC522, 1602 I2C LCD, 4x4 keypad, "
-          "SG90 servo and ESP32-CAM recorder")
+    svg_open(W, H, "Smart Gateway - breadboard view",
+             view=(40, 70, 1590, 1120))
 
     # ---- Arduino UNO -------------------------------------------------------
     ux, uy, uw, uh = 470, 330, 470, 340
@@ -242,10 +245,10 @@ def breadboard_view(path):
          family="Courier New, monospace")
     text(lx + 46, ly + 64, "GW-LAB-01", 13, "#2c3a12",
          family="Courier New, monospace")
+    text(lx + lw - 14, ly + lh - 13, "LCD 1602", 11, "#cfe8d6",
+         anchor="end", weight="bold")
     rect(lx + 8, ly + lh - 30, 96, 22, "#0f3d22", rx=3)
     text(lx + 56, ly + lh - 15, "PCF8574", 9, "#cfe8d6", anchor="middle")
-    text(lx + lw / 2, ly - 14, "LCD 1602 + I2C backpack (addr 0x27)", 12.5,
-         C["ink"], anchor="middle", weight="bold")
     lcd = {}
     for i, name in enumerate(["GND", "VCC", "SDA", "SCL"]):
         px = lx + 130 + i * 28
@@ -266,11 +269,6 @@ def breadboard_view(path):
             rect(bx_, by_, 54, 50, fill, "#1a1d21", rx=7, sw=1.5)
             text(bx_ + 27, by_ + 33, labels[r][c], 19, "#ffffff",
                  anchor="middle", weight="bold")
-    text(kx + kw / 2, ky - 14, "4x4 matrix keypad", 12.5, C["ink"],
-         anchor="middle", weight="bold")
-    text(kx + kw / 2, ky + kh + 24,
-         "column D unscanned - pin budget exhausted", 10.5, C["muted"],
-         anchor="middle", style="italic")
     kp = {}
     for i, name in enumerate(["R1", "R2", "R3", "R4", "C1", "C2", "C3"]):
         py = ky + 34 + i * 36
@@ -288,8 +286,6 @@ def breadboard_view(path):
     text(rx_ + rw / 2, ry + 258, "MFRC522", 14, "#ffffff", anchor="middle",
          weight="bold")
     text(rx_ + rw / 2, ry + 277, "13.56 MHz", 10.5, "#bcd9f5", anchor="middle")
-    text(rx_ + rw / 2, ry - 14, "RC522 reader (3.3 V logic)", 12.5, C["ink"],
-         anchor="middle", weight="bold")
     rc = {}
     for i, name in enumerate(["SDA", "SCK", "MOSI", "MISO", "GND", "RST", "3V3"]):
         py = ry + 26 + i * 38
@@ -310,8 +306,6 @@ def breadboard_view(path):
             circle(bx + 28 + col * 14, by + 48 + row * 12, 1.9, "#b9bab6")
             circle(bx + 28 + col * 14, by + 116 + row * 12, 1.9, "#b9bab6")
     line(bx + 16, by + 108, bx + bw - 16, by + 108, "#dcdcd8", 6)
-    text(bx + bw / 2, by - 14, "Annunciation and actuation harness", 12.5,
-         C["ink"], anchor="middle", weight="bold")
 
     led_r = (bx + 130, by + 78)
     led_g = (bx + 230, by + 78)
@@ -342,8 +336,6 @@ def breadboard_view(path):
          weight="bold")
     text(ex + ew / 2, ey + 156, "MJPEG2SD recorder", 10, "#a9b0ba",
          anchor="middle")
-    text(ex + ew / 2, ey - 14, "Movement recorder node", 12.5, C["ink"],
-         anchor="middle", weight="bold")
     cam = {}
     for i, name in enumerate(["GND", "5V", "G13", "G12", "G16"]):
         px = ex + 22 + i * 44
@@ -364,8 +356,6 @@ def breadboard_view(path):
     circle(sx + 140, sy + 62, 22, "#e8eef5", "#9fb4c9", 2)
     line(sx + 140, sy + 62, sx + 140, sy + 26, "#9fb4c9", 5)
     text(sx + 56, sy + 68, "SG90", 15, "#ffffff", weight="bold")
-    text(sx + 85, sy - 14, "Latch actuator", 12.5, C["ink"], anchor="middle",
-         weight="bold")
     sv = {}
     for i, name in enumerate(["SIG", "5V", "GND"]):
         py = sy + 26 + i * 30
@@ -473,11 +463,6 @@ def breadboard_view(path):
     wire([(psx, psy + 44), (580, psy + 44), (580, rail_bot_b)], C["w_gnd"])
 
     validate_wires()
-    legend(70, 100, WIRE_KEY, cols=1)
-    text(28, H - 20,
-         "Generated by hardware/schematic/svggen.py - do not edit by hand. "
-         "Pin assignment authoritative in README.md section 3.2.",
-         10.5, C["muted"], style="italic")
     svg_close(path)
 
 

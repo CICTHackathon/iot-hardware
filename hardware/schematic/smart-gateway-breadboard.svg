@@ -1,12 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1200" viewBox="0 0 1700 1200">
+<svg xmlns="http://www.w3.org/2000/svg" width="1590" height="1120" viewBox="40 70 1590 1120">
 <title>Smart Gateway - breadboard view</title>
-<rect x="0" y="0" width="1700" height="1200" rx="0" fill="#f7f8fa" stroke="none" stroke-width="1" opacity="1.0"/>
-<rect x="0" y="0" width="1700" height="62" rx="0" fill="#ffffff" stroke="none" stroke-width="1" opacity="1.0"/>
-<line x1="0" y1="62" x2="1700" y2="62" stroke="#d7dbe2" stroke-width="2" stroke-linecap="round"/>
-<text x="28" y="30" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="20" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="start">Smart Gateway - Breadboard View</text>
-<text x="28" y="50" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">Arduino UNO R3 enforcement node with RC522, 1602 I2C LCD, 4x4 keypad, SG90 servo and ESP32-CAM recorder</text>
-<text x="1672" y="30" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#5b6472" text-anchor="end">iot-hardware</text>
-<text x="1672" y="50" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">Smart Gateway - edge tier</text>
+<rect x="40" y="70" width="1590" height="1120" rx="0" fill="#f7f8fa" stroke="none" stroke-width="1" opacity="1.0"/>
 <rect x="470" y="330" width="470" height="340" rx="14" fill="#00979d" stroke="#007b80" stroke-width="2" opacity="1.0"/>
 <rect x="486" y="566" width="122" height="46" rx="4" fill="#3b3f46" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="547" y="594" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#e6e8ec" text-anchor="middle">ATmega328P</text>
@@ -73,9 +67,9 @@
 <rect x="420" y="106" width="320" height="64" rx="3" fill="#9ccc3c" stroke="#6f9a24" stroke-width="1.5" opacity="1.0"/>
 <text x="436" y="132" font-family="Courier New, monospace" font-size="13" font-weight="normal" font-style="normal" fill="#2c3a12" text-anchor="start">PRESENT BADGE</text>
 <text x="436" y="156" font-family="Courier New, monospace" font-size="13" font-weight="normal" font-style="normal" fill="#2c3a12" text-anchor="start">GW-LAB-01</text>
+<text x="756" y="197" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11" font-weight="bold" font-style="normal" fill="#cfe8d6" text-anchor="end">LCD 1602</text>
 <rect x="398" y="180" width="96" height="22" rx="3" fill="#0f3d22" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="446" y="195" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9" font-weight="normal" font-style="normal" fill="#cfe8d6" text-anchor="middle">PCF8574</text>
-<text x="580.0" y="78" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">LCD 1602 + I2C backpack (addr 0x27)</text>
 <circle cx="520" cy="210" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
 <text x="520" y="198" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9" font-weight="normal" font-style="normal" fill="#cfe8d6" text-anchor="middle">GND</text>
 <circle cx="548" cy="210" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
@@ -117,8 +111,6 @@
 <text x="1481" y="349" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="19" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">#</text>
 <rect x="1520" y="316" width="54" height="50" rx="7" fill="#4a4f57" stroke="#1a1d21" stroke-width="1.5" opacity="1.0"/>
 <text x="1547" y="349" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="19" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">D</text>
-<text x="1450.0" y="78" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">4x4 matrix keypad</text>
-<text x="1450.0" y="416" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="middle">column D unscanned - pin budget exhausted</text>
 <circle cx="1300" cy="126" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
 <text x="1312" y="130" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#c9ccd1" text-anchor="start">R1</text>
 <circle cx="1300" cy="162" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
@@ -142,7 +134,6 @@
 <circle cx="165.0" cy="570" r="30" fill="none" stroke="#7fb6ea" stroke-width="3" opacity="1.0"/>
 <text x="165.0" y="638" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">MFRC522</text>
 <text x="165.0" y="657" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="normal" fill="#bcd9f5" text-anchor="middle">13.56 MHz</text>
-<text x="165.0" y="366" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">RC522 reader (3.3 V logic)</text>
 <circle cx="270" cy="406" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
 <text x="258" y="410" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#cfe4f7" text-anchor="end">SDA</text>
 <circle cx="270" cy="444" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
@@ -573,7 +564,6 @@
 <circle cx="648" cy="926" r="1.9" fill="#b9bab6" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="648" cy="994" r="1.9" fill="#b9bab6" stroke="none" stroke-width="1" opacity="1.0"/>
 <line x1="76" y1="938" x2="664" y2="938" stroke="#dcdcd8" stroke-width="6" stroke-linecap="round"/>
-<text x="370.0" y="816" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">Annunciation and actuation harness</text>
 <circle cx="190" cy="908" r="13" fill="#d4483b" stroke="#00000033" stroke-width="1.5" opacity="1.0"/>
 <circle cx="186" cy="904" r="4" fill="#ffffff" stroke="none" stroke-width="1" opacity="0.6"/>
 <text x="212" y="912" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">DENY</text>
@@ -602,7 +592,6 @@
 <text x="1171" y="524" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="8.5" font-weight="normal" font-style="normal" fill="#23262b" text-anchor="middle">microSD</text>
 <text x="1120.0" y="608" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">ESP32-CAM</text>
 <text x="1120.0" y="626" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#a9b0ba" text-anchor="middle">MJPEG2SD recorder</text>
-<text x="1120.0" y="456" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">Movement recorder node</text>
 <circle cx="1032" cy="680" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
 <text x="1032" y="668" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="8.5" font-weight="normal" font-style="normal" fill="#c9ccd1" text-anchor="middle">GND</text>
 <circle cx="1076" cy="680" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
@@ -621,7 +610,6 @@
 <circle cx="1560" cy="682" r="22" fill="#e8eef5" stroke="#9fb4c9" stroke-width="2" opacity="1.0"/>
 <line x1="1560" y1="682" x2="1560" y2="646" stroke="#9fb4c9" stroke-width="5" stroke-linecap="round"/>
 <text x="1476" y="688" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="start">SG90</text>
-<text x="1505" y="606" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="middle">Latch actuator</text>
 <circle cx="1420" cy="646" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
 <text x="1432" y="650" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#dceaf7" text-anchor="start">SIG</text>
 <circle cx="1420" cy="676" r="4.5" fill="#c9ccd1" stroke="#7d8189" stroke-width="1" opacity="1.0"/>
@@ -745,23 +733,4 @@
 <polyline points="730,1084 580,1084 580,996" fill="none" stroke="#101317" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="730" cy="1084" r="2.7" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="580" cy="996" r="2.7" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
-<rect x="70" y="100" width="270" height="218" rx="6" fill="#ffffff" stroke="#d7dbe2" stroke-width="1.5" opacity="1.0"/>
-<text x="84" y="124" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="start">Wire colour key</text>
-<line x1="84" y1="146" x2="110" y2="146" stroke="#e02b20" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="150" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">+5 V (external rail)</text>
-<line x1="84" y1="168" x2="110" y2="168" stroke="#101317" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="172" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">GND / common return</text>
-<line x1="84" y1="190" x2="110" y2="190" stroke="#e8820c" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="194" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">+3.3 V (RC522 only)</text>
-<line x1="84" y1="212" x2="110" y2="212" stroke="#7b4fd0" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="216" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">SPI - RC522</text>
-<line x1="84" y1="234" x2="110" y2="234" stroke="#0f9b8e" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="238" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">I2C - LCD and ESP32-CAM</text>
-<line x1="84" y1="256" x2="110" y2="256" stroke="#c9a227" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="260" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">Keypad matrix</text>
-<line x1="84" y1="278" x2="110" y2="278" stroke="#2f6fd0" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="282" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">Discrete signals</text>
-<line x1="84" y1="300" x2="110" y2="300" stroke="#d63384" stroke-width="4" stroke-linecap="round"/>
-<text x="118" y="304" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">REC_TRIG to recorder</text>
-<text x="28" y="1180" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="start">Generated by hardware/schematic/svggen.py - do not edit by hand. Pin assignment authoritative in README.md section 3.2.</text>
 </svg>
