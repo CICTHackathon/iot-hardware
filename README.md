@@ -1,6 +1,6 @@
-# iot-hardware
+# Smart Gateway Arduino Hardware in Movement Attestation
 
-A collection of embedded IoT systems combining physical circuit design and firmware development using ESP32/Arduino platforms, with the final goal to build a smart gateway access.
+*A bench-scale embedded testbed for smart-workplace physical access, combining circuit design and firmware development on the ESP32/Arduino platforms.*
 
 ---
 
@@ -10,12 +10,19 @@ This repository contains the **edge tier** of a two-tier smart-workplace access 
 
 The architecture separates *decision* from *enforcement*, following the reference model established by NIST SP 800-162 for Attribute-Based Access Control (ABAC) [1] and the XACML functional decomposition [2]:
 
-- The **Policy Decision Point (PDP)** — an LLM-mediated rule engine that evaluates natural-language organisational policy against structured request attributes — resides in the companion repository, `<org>/smart-access-policy` *(substitute the actual repository URL)*.
+- The **Policy Decision Point (PDP)** — an LLM-mediated rule engine that evaluates natural-language organisational policy against structured request attributes — resides in the companion repository, `<org>/smart-access-policy`.
 - The **Policy Enforcement Point (PEP)**, the **Policy Information Point (PIP)** and the **movement recording subsystem** — that is, everything that touches copper, silicon and a door latch — reside **here**.
+
+> [!TIP]
+> `<org>/smart-access-policy` is a placeholder. Substitute the actual companion repository URL before publication.
 
 Concretely, this repository implements a **laboratory-scale mini gateway**: an Arduino UNO R3 node performing multi-factor credential capture (RFID + PIN) and electromechanical actuation, coupled to an ESP32-CAM node performing event-triggered motion recording, derived from the `ESP32-CAM_MJPEG2SD` firmware [3]. The credential-capture logic is inspired by the BanLinhKien RC522 door-lock reference project [4], which is extended here from a stand-alone hard-coded lock into a network-attached, policy-governed, auditable enforcement node.
 
-**Scope note.** This is a *simulation* platform — a bench-top gateway intended for research, teaching and protocol validation. It is not certified for life-safety egress and must not be deployed as the sole control on a fire-egress path (see §9).
+> [!CAUTION]
+> **Scope.** This is a *simulation* platform — a bench-top gateway intended for research, teaching and protocol validation. It is not certified for life-safety egress and must not be deployed as the sole control on a fire-egress path. Mechanical free egress takes precedence over every policy in the decision tier.
+
+> [!CAUTION]
+> **Credential strength.** An RC522 UID is an *identifier*, not a *secret*: MIFARE Classic UIDs are trivially cloned, and the Crypto-1 cipher has been broken in the open literature since 2008 [5]. The PIN factor and the visual attestation exist precisely because the card carries no weight on its own. Any field deployment requires cryptographic card authentication (DESFire EV2/EV3 or equivalent).
 
 ---
 
@@ -52,7 +59,8 @@ The division of responsibility is deliberate and strict:
 | Actuation | Edge | Must remain deterministic and bounded in latency |
 | Audit retention | Decision | Must be tamper-evident and outlive the device |
 
-The edge node **never** stores organisational policy. It stores only a short-lived *cached authorisation set* used for degraded operation (§6.3).
+> [!IMPORTANT]
+> The edge node **never** stores organisational policy. It holds only a short-lived *cached authorisation set*, bounded in size and TTL, used to sustain degraded operation during a network partition. On any cache miss the node fails **secure** — it denies.
 
 ---
 
@@ -72,7 +80,8 @@ The edge node **never** stores organisational policy. It stores only a short-liv
 | 1 | ESP32-CAM (AI-Thinker, OV2640) + microSD | Movement recording and network uplink |
 | 1 | Breadboard, jumper set, 5 V ≥ 2 A supply | Bench harness |
 
-> **Power note.** The servo's stall current and the ESP32-CAM's transmit bursts must not be drawn through the UNO's on-board regulator. Both are fed from the external 5 V rail with grounds commoned to the UNO. Omitting this is the single most common cause of spurious resets on this bench.
+> [!WARNING]
+> **Power distribution.** The servo's stall current and the ESP32-CAM's transmit bursts must not be drawn through the UNO's on-board regulator. Both are fed from the external 5 V rail with grounds commoned to the UNO. Omitting this is the single most common cause of spurious resets on this bench.
 
 ### 3.2 Pin Assignment — Arduino UNO R3
 
@@ -83,7 +92,7 @@ Derived from the reference wiring of [4] and retained for interoperability with 
 | RC522 `SDA/SS` | D10 | SPI slave select |
 | RC522 `RST` | D9 | Module reset |
 | RC522 `MOSI / MISO / SCK` | D11 / D12 / D13 | Hardware SPI |
-| RC522 `3.3V`, `GND` | 3V3, GND | **3.3 V only** — the RC522 is not 5 V tolerant |
+| RC522 `3.3V`, `GND` | 3V3, GND | 3.3 V only — see caution below |
 | Buzzer | D8 | Active-high |
 | Green LED (grant) | D7 | |
 | Red LED (deny) | D6 | |
@@ -92,7 +101,11 @@ Derived from the reference wiring of [4] and retained for interoperability with 
 | Servo signal | A0 | Driven as a digital output |
 | LCD `SDA` / `SCL` | A4 / A5 | Shared I²C bus |
 
-**Pin-budget note.** The ATmega328P exhausts its I/O on this configuration. The reference design [4] declares only three keypad columns, so the fourth column of a 4×4 keypad (`A`, `B`, `C`, `D`) is physically present but unscanned — the device behaves as a 4×3 keypad. This project accepts that constraint rather than silently changing the reference wiring, and instead assigns the two soft keys the system needs (`*` = clear, `#` = submit) to the surviving columns. Reclaiming the fourth column requires either an I/O expander on the existing I²C bus (recommended: PCF8574 at a second address) or migration of the enforcement node to an MCU with a larger port map.
+> [!CAUTION]
+> The RC522 is **not 5 V tolerant**. Powering it from the UNO's 5 V rail, or driving its SPI lines at 5 V without series resistors, will destroy the module.
+
+> [!NOTE]
+> **Pin budget.** The ATmega328P exhausts its I/O on this configuration. The reference design [4] declares only three keypad columns, so the fourth column of a 4×4 keypad (`A`, `B`, `C`, `D`) is physically present but unscanned — the device behaves as a 4×3 keypad. This project accepts that constraint rather than silently changing the reference wiring, and instead assigns the two soft keys the system needs (`*` = clear, `#` = submit) to the surviving columns. Reclaiming the fourth column requires either an I/O expander on the existing I²C bus (recommended: PCF8574 at a second address) or migration of the enforcement node to an MCU with a larger port map.
 
 ### 3.3 Inter-node Interface
 
@@ -104,8 +117,10 @@ Because no general-purpose pins remain, the UNO↔ESP32 link is carried on the *
 | `REC_TRIG` | (shared with buzzer gate) | GPIO 16 | Level-triggered recording request |
 | `GND` | GND | GND | Common reference |
 
-Level shifting is required: the ESP32 is a 3.3 V part. A bidirectional MOSFET level translator is used on `SDA`/`SCL`; the trigger line uses a resistive divider.
+> [!WARNING]
+> Level shifting is required: the ESP32 is a 3.3 V part. A bidirectional MOSFET level translator is used on `SDA`/`SCL`; the trigger line uses a resistive divider.
 
+> [!NOTE]
 > GPIO 12 and 13 are only available because `ESP32-CAM_MJPEG2SD` is configured for **1-line SD (`SD_MMC` 1-bit) mode**, which releases the SDIO data lines. This is the stock configuration of that firmware [3].
 
 ---
@@ -150,7 +165,10 @@ Built on `ESP32-CAM_MJPEG2SD` [3], which supplies the frame pipeline, AVI muxing
 - **Correlation.** Each clip is named and tagged with the transaction identifier received over I²C, so the video evidence and the audit record are joinable after the fact.
 - **Uplink.** Access requests and decisions traverse MQTT; clips traverse HTTPS or FTP to the retention store, using the transports already implemented in [3].
 
-Prerequisites: Arduino IDE ≥ 2.x or `arduino-cli`; ESP32 board support ≥ 2.0.x; libraries `MFRC522`, `LiquidCrystal_I2C`, `Keypad`, `Servo`; the upstream `ESP32-CAM_MJPEG2SD` sources [3].
+### 4.3 Bring-up
+
+> [!NOTE]
+> **Prerequisites.** Arduino IDE ≥ 2.x or `arduino-cli`; ESP32 board support ≥ 2.0.x; libraries `MFRC522`, `LiquidCrystal_I2C`, `Keypad`, `Servo`; the upstream `ESP32-CAM_MJPEG2SD` sources [3].
 
 1. **Wire and verify power** before connecting the RC522 — confirm 3.3 V at the module, and confirm the servo and camera are on the external rail.
 2. **Flash the enforcement node.** Bring it up with the local PDP stub (`tools/pdp-stub`) so that the door logic can be exercised without the decision tier.
@@ -158,19 +176,26 @@ Prerequisites: Arduino IDE ≥ 2.x or `arduino-cli`; ESP32 board support ≥ 2.0
 4. **Verify the trigger path** — assert `REC_TRIG` and confirm a clip is written to SD with the expected pre-roll.
 5. **Point the recorder at the real PDP** and confirm signature verification, including a deliberate negative test with a bad signature.
 
-### 4.3 Movement Semantics
+### 4.4 Movement Semantics
 
-The system distinguishes three observable classes, only the first of which is a normal transit: Class 2 and class 3 are escalated to the decision tier as anomalies rather than being discarded at the edge.
+The system distinguishes three observable classes, only the first of which is a normal transit.
 
 | Class | Credential event | Motion event | Interpretation |
 |---|---|---|---|
-| Attested transit | present | present | Nominal |
-| Unattested motion | absent | present | Tailgating / propped door / intrusion |
-| Unconsummated grant | present | absent | Credential probing, or a granted user who did not enter |
+| 1 — Attested transit | present | present | Nominal |
+| 2 — Unattested motion | absent | present | Tailgating / propped door / intrusion |
+| 3 — Unconsummated grant | present | absent | Credential probing, or a granted user who did not enter |
+
+> [!IMPORTANT]
+> Classes 2 and 3 are escalated to the decision tier as anomalies rather than being discarded at the edge. An access system that observes only successful transits is blind to precisely the events worth observing.
 
 ---
 
 ## 5. Project Structure
+
+> [!NOTE]
+> The repository is at an early stage. The tree below is the **target** layout, not a description of files already committed.
+
 ```
 iot-hardware/
 ├── firmware/
