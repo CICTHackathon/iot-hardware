@@ -1,7 +1,4 @@
 # Smart Gateway Arduino Hardware in Movement Attestation
-
-*A bench-scale embedded testbed for smart-workplace physical access, combining circuit design and firmware development on the ESP32/Arduino platforms.*
-
 ---
 
 ## 1. Abstract
@@ -24,15 +21,9 @@ Concretely, this repository implements a **laboratory-scale mini gateway**: an A
 ```
 iot-hardware/
 ├── firmware/
-│   ├── gateway-uno/                     # Enforcement node: FSM, RC522, keypad, LCD, servo
-│   └── recorder-esp32cam/               # Integration layer over ESP32-CAM_MJPEG2SD
-├── hardware/
-│   └── schematic/
-│       ├── smart-gateway.sch            # EAGLE 7.3.0 schematic - net-level interconnect
-│       ├── svggen.py                    # Breadboard generator (dependency-free)
-│       ├── schematic.sh                 # Regenerate + rasterise the breadboard PNG
-│       ├── smart-gateway-breadboard.svg # Generated - do not edit by hand
-│       └── smart-gateway-breadboard.png # Generated - the figure below
+│   ├── gateway-uno/                     # Enforcement node (FSM, RC522, keypad, LCD, servo)
+│   └── esp32cam/                        # Integration layer over ESP32-CAM_MJPEG2SD
+├── schematic/                           # Breadboard generator
 ├── protocol/
 ├── docs/
 └── tools/
