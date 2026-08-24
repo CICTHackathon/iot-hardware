@@ -31,6 +31,7 @@ done
 
 BREADBOARD="$DIR/smart-gateway-breadboard"
 SCHEMATIC="$DIR/smart-gateway-schematic"
+DISPLAY="$DIR/smart-gateway-display"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -99,17 +100,22 @@ render() {  # render <svg-in> <png-out>
 # ---------------------------------------------------------------------------
 # 3. Export.
 # ---------------------------------------------------------------------------
+EXPORTED=0
 if [ -n "$FRITZING" ] && [ -n "$FZZ" ]; then
     echo "==> exporting from Fritzing sketch: $(basename "$FZZ")"
     "$FRITZING" --export-image-breadboard "$BREADBOARD.png" "$FZZ" || true
     "$FRITZING" --export-image-schematic  "$SCHEMATIC.png"  "$FZZ" || true
+    [ -f "$BREADBOARD.png" ] && [ -f "$SCHEMATIC.png" ] && EXPORTED=1
 fi
 
-if [ ! -f "$BREADBOARD.png" ] || [ ! -f "$SCHEMATIC.png" ]; then
+# Rasterise unless Fritzing already produced both images in this run - a stale
+# PNG left over from a previous run must never be mistaken for a fresh export.
+if [ "$EXPORTED" -eq 0 ]; then
     echo "==> rasterising SVG at ${DPI} dpi"
     render "$BREADBOARD.svg" "$BREADBOARD.png"
     render "$SCHEMATIC.svg"  "$SCHEMATIC.png"
+    render "$DISPLAY.svg"    "$DISPLAY.png"
 fi
 
 echo "==> done"
-ls -l "$BREADBOARD.png" "$SCHEMATIC.png" 2>/dev/null || true
+ls -l "$BREADBOARD.png" "$SCHEMATIC.png" "$DISPLAY.png" 2>/dev/null || true
