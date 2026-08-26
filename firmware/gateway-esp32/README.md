@@ -10,7 +10,7 @@ Edge-tier door controller for the Smart Gateway: RC522 credential capture, 4×4 
 | `app_config.h` | Pin map, timings, `RuntimeConfig` |
 | `access.cpp/.h` | The FSM, PIN hashing, PDP client task, audit ring, cached ACL |
 | `panel.cpp/.h` | HD44780-over-PCF8574 driver, keypad scan, LEDs, buzzer |
-| `latch.cpp/.h` | Servo sweep, hold timer, `REC_TRIG` to the recorder |
+| `latch.cpp/.h` | Servo sweep and hold timer |
 | `web.cpp/.h` | Console + JSON API on :80 |
 | `console_ui.h` | The shared console, embedded in flash — **generated**, see below |
 
@@ -53,7 +53,7 @@ Port 80. Every route takes the token, either as the `X-Api-Token` header or as `
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/` | Operator page |
-| GET | `/api/status` | State, door, transaction in flight, counters, link |
+| GET | `/api/status` | State, door, transaction in flight, counters, link, clock |
 | GET | `/api/events?since=&limit=` | Audit ring, newest first |
 | POST | `/api/decision` | Answer the transaction the node is blocked on |
 | POST | `/api/unlock`, `/api/lock` | Operator override — audited as `remote` |
@@ -61,6 +61,6 @@ Port 80. Every route takes the token, either as the `X-Api-Token` header or as `
 | POST | `/api/acl` | `{uid,pin,ttl}`, or `{remove}`, or `{clear}` |
 | POST | `/api/enrol?ms=` | Arm the reader to report the next card |
 | GET | `/api/enrol` | Collect the enrolled UID, once |
-| GET/POST | `/api/config` | Read all settings / set one `{key,value}` |
+| GET/POST | `/api/config` | Read all settings / write `{key,value}` or a body naming settings directly |
 | POST | `/api/wifi`, `/api/reboot` | Provisioning |
 

@@ -42,7 +42,7 @@ Port 80:
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/` | Operator console — [`console/index.html`](../../console/index.html), shared with the enforcement node |
-| GET | `/api/status` | Counters, timings, last scores, changed-cell mask |
+| GET | `/api/status` | Counters, timings, last scores, changed-cell mask, clock |
 | GET/POST | `/api/config` | Read all settings / set one (`?key=value`) |
 | GET | `/api/events` | Recent events as JSON |
 | POST | `/api/label` | Ground truth for one event (`?id=&label=0\|1`) |
@@ -57,7 +57,7 @@ Port 80:
 
 ## Recordings and WebDAV
 
-Events land on the microSD card as `/events/YYYYMMDD/HHMMSS_id_verdict.jpg` with a JSON sidecar carrying the scores, the bounding box and the feature vector which the sidecar is what makes a clip joinable against the audit record held by the decision tier. With no card, the same tree is written to internal flash. When space runs short the oldest day-folder is dropped. `SD_MMC` is mounted in **1-line mode**, which is not a tuning choice, it frees GPIO 12/13 for the I²C link to the enforcement node.
+Events land on the microSD card as `/events/YYYYMMDD/HHMMSS_id_verdict.jpg` with a JSON sidecar carrying the epoch, the scores, the bounding box and the feature vector. The epoch is what makes a clip joinable against a credential event — this node is not wired to the enforcement node and is never told that a badge was presented, so the join happens in the console after the fact (root README §4.3), and a clip written before NTP landed is stamped `up<uptime>` instead of a wall-clock time and cannot be correlated at all. With no card, the same tree is written to internal flash. When space runs short the oldest day-folder is dropped. `SD_MMC` is mounted in **1-line mode**, which is not a tuning choice: 4-bit mode claims GPIO 4 as `DATA1`, and GPIO 4 on this module is the illumination lamp. In 4-bit mode the lamp flickers on every card write and `lampSet()` fights the SD driver for the pin. 1-line mode uses `DATA0` alone and leaves 4, 12 and 13 free.
 
 ### Mapping the share on Windows
 

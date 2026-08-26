@@ -86,11 +86,12 @@ esp_err_t statusHandler(httpd_req_t* req) {
   uint8_t mask[GRID_CELLS];
   detectCopyMask(mask);
 
-  char* buf = static_cast<char*>(malloc(GRID_CELLS + 640));
+  char* buf = static_cast<char*>(malloc(GRID_CELLS + 704));
   if (!buf) return httpd_resp_send_500(req);
 
-  int n = snprintf(buf, 620,
-      "{\"ip\":\"%s\",\"uptime\":%lu,\"fps\":%.1f,\"frames\":%lu,\"samples\":%lu,"
+  int n = snprintf(buf, 684,
+      "{\"ip\":\"%s\",\"uptime\":%lu,\"epoch\":%lld,\"clockSet\":%s,"
+      "\"fps\":%.1f,\"frames\":%lu,\"samples\":%lu,"
       "\"events\":%lu,\"eventOpen\":%s,\"persistence\":%u,\"area\":%.4f,"
       "\"changed\":%u,\"x0\":%u,\"y0\":%u,\"x1\":%u,\"y1\":%u,"
       "\"s1\":%.3f,\"s2\":%.3f,\"decodeMs\":%u,\"analyseMs\":%u,\"mlMs\":%u,"
@@ -98,7 +99,13 @@ esp_err_t statusHandler(httpd_req_t* req) {
       "\"storeUsed\":%llu,\"storeTotal\":%llu,\"mask\":\"",
       WiFi.isConnected() ? WiFi.localIP().toString().c_str()
                          : WiFi.softAPIP().toString().c_str(),
-      static_cast<unsigned long>(millis() / 1000), s.fps,
+      static_cast<unsigned long>(millis() / 1000),
+      // This node is not wired to the enforcement node, so the epoch is the
+      // only thing the console can join its events on (README §4.3). Reporting
+      // the clock as status is what lets §5.2 step 4 be a check rather than a
+      // guess, and what lets the Timeline tab say the join is unavailable
+      // before any event has been recorded.
+      static_cast<long long>(time(nullptr)), clockSet() ? "true" : "false", s.fps,
       static_cast<unsigned long>(s.frames), static_cast<unsigned long>(s.samples),
       static_cast<unsigned long>(s.eventCount), s.eventOpen ? "true" : "false",
       s.persistence, s.lastMotion.areaFrac, s.lastMotion.changedCells,

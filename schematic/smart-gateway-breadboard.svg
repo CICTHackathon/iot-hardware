@@ -204,9 +204,8 @@
 <text x="1181" y="864" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="8.5" font-weight="normal" font-style="normal" fill="#23262b" text-anchor="middle">microSD</text>
 <text x="1130.0" y="946" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">ESP32-CAM</text>
 <text x="1130.0" y="964" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#a9b0ba" text-anchor="middle">MJPEG2SD recorder</text>
-<text x="1130.0" y="982" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#7f868f" text-anchor="middle">AI-Thinker / OV2640</text>
+<text x="1130.0" y="982" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="normal" fill="#7f868f" text-anchor="middle">AI-Thinker on USB-C baseboard</text>
 <rect x="1104.0" y="990" width="52" height="14" rx="7" fill="#9aa1ab" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="1130.0" y="974" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="italic" fill="#a9b0ba" text-anchor="middle">USB-C  -  own supply</text>
 <rect x="60" y="800" width="620" height="200" rx="6" fill="#f0f0ee" stroke="#c8c9c4" stroke-width="1.5" opacity="1.0"/>
 <line x1="76" y1="814" x2="664" y2="814" stroke="#d4483b" stroke-width="1.5" stroke-linecap="round"/>
 <line x1="76" y1="826" x2="664" y2="826" stroke="#2f6fd0" stroke-width="1.5" stroke-linecap="round"/>

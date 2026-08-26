@@ -140,7 +140,7 @@ esp_err_t statusHandler(httpd_req_t* req) {
   snprintf(json, sizeof(json),
       "{\"door\":\"%s\",\"state\":\"%s\",\"txn\":\"%s\",\"uid\":\"%s\","
       "\"pinDigits\":%u,\"attempts\":%u,\"stateMs\":%lu,\"waitMs\":%lu,"
-      "\"angle\":%u,\"holdMs\":%lu,\"recTrig\":%s,"
+      "\"angle\":%u,\"holdMs\":%lu,\"clockSet\":%s,"
       "\"transactions\":%lu,\"grants\":%lu,\"denials\":%lu,\"degraded\":%lu,"
       "\"pdp\":{\"configured\":%s,\"url\":\"%s\",\"lastCode\":%d,\"lastMs\":%lu},"
       "\"acl\":%u,\"auditLast\":%lu,\"lcd\":%s,\"enrolArmed\":%s,"
@@ -150,7 +150,9 @@ esp_err_t statusHandler(httpd_req_t* req) {
       s.pinDigits, s.attempts,
       static_cast<unsigned long>(s.stateMs), static_cast<unsigned long>(s.waitMs),
       latchAngle(), static_cast<unsigned long>(latchHoldRemainingMs()),
-      recAsserted() ? "true" : "false",
+      // The console's evidence join is on the epoch and nothing else, so
+      // whether this node has a real clock is node status, not a detail.
+      clockSet() ? "true" : "false",
       static_cast<unsigned long>(s.transactions), static_cast<unsigned long>(s.grants),
       static_cast<unsigned long>(s.denials), static_cast<unsigned long>(s.degraded),
       s.pdpConfigured ? "true" : "false", g_cfg.pdpUrl, s.lastHttpCode,
@@ -340,18 +342,46 @@ esp_err_t configGetHandler(httpd_req_t* req) {
 
 esp_err_t configPostHandler(httpd_req_t* req) {
   if (!authorised(req)) return sendErr(req, "401 Unauthorized", "token required");
-  char body[512];
+  // Sized for the whole record at once: the five string settings alone are 266
+  // characters before the key names, and readBody refuses anything it cannot
+  // hold rather than acting on half a request.
+  char body[1024];
   if (!readBody(req, body, sizeof(body))) return sendErr(req, "400 Bad Request", "body");
 
-  // One key per call, as on the camera node. A partial write of a whole
-  // settings blob is what leaves a door with an open angle and a closed angle
-  // that are the same number.
+  // Two shapes, one transaction either way. {"key":…,"value":…} sets a single
+  // setting; a body naming settings directly sets all of them at once.
+  //
+  // The second shape is not a convenience. The servo angles are only wrong in
+  // combination, so applying them one request at a time means every swap of the
+  // pair passes through a state the node has to refuse — the operator cannot
+  // get from one valid pair to the other. Judging the whole record at once is
+  // what makes that reachable, and it is also a stricter check than the
+  // per-key path it replaces, not a looser one.
   char key[32] = "", value[128] = "";
-  if (!field(req, body, "key", key, sizeof(key)) ||
-      !field(req, body, "value", value, sizeof(value)))
-    return sendErr(req, "400 Bad Request", "key and value");
-  if (!configSetKey(key, value)) return sendErr(req, "400 Bad Request", "unknown key");
-  configSave();
+  if (field(req, body, "key", key, sizeof(key)) &&
+      field(req, body, "value", value, sizeof(value))) {
+    if (!configSetKey(key, value))
+      return sendErr(req, "400 Bad Request", "unknown key, or rejected value");
+    configSave();
+    return sendOk(req);
+  }
+
+  RuntimeConfig candidate = g_cfg;
+  size_t named = 0;
+  char v[128];
+  for (size_t i = 0; i < kConfigKeyCount; ++i) {
+    if (!field(req, body, kConfigKeys[i], v, sizeof(v))) continue;
+    if (!configApplyOne(&candidate, kConfigKeys[i], v))
+      return sendErr(req, "400 Bad Request", "unknown key");
+    ++named;
+  }
+  if (!named) return sendErr(req, "400 Bad Request", "no settable field in the request");
+
+  const char* why = nullptr;
+  if (!configValidate(candidate, &why))
+    return sendErr(req, "409 Conflict", why ? why : "invalid combination");
+
+  configCommit(candidate);
   return sendOk(req);
 }
 
@@ -432,6 +462,8 @@ bool webBegin() {
   cfg.max_uri_handlers = sizeof(kRoutes) / sizeof(kRoutes[0]) + 2;
   cfg.uri_match_fn = httpd_uri_match_wildcard;   // for the preflight catch-all
   cfg.lru_purge_enable = true;
+  cfg.stack_size = 8192;      // the config handler holds a candidate record and
+                              // a kilobyte of request body at the same time
   // The handlers build their replies in half-kilobyte stack buffers and hand
   // them to a many-argument snprintf. The 4 kB default does not survive that:
   // the node reboots on the first request rather than answering it.

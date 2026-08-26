@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <time.h>
 
 #include "esp_camera.h"
 
@@ -54,6 +55,16 @@
 
 #define NTP_SERVER_1 "pool.ntp.org"
 #define NTP_SERVER_2 "time.nist.gov"
+
+// A clock counts as set once it is past a moment this firmware could not have
+// been built before. The console joins credential events to motion events on
+// the epoch and on nothing else (README §4.3), so this predicate is what
+// separates evidence from two stopwatches started at different moments. Both
+// firmwares carry the identical test; a node that fails it says so rather than
+// reporting 1970 as a time.
+#define CLOCK_SET_AFTER 1700000000L   // 2023-11-14, well before any build here
+
+inline bool clockSet() { return time(nullptr) > CLOCK_SET_AFTER; }
 
 // Detection geometry
 

@@ -343,7 +343,6 @@ void enter(GateState s) {
       ++g_grants;
       panelAnnunciate(ANN_GRANT);
       panelShow("Access granted", "Door opening", "", nullptr);
-      recAssert(REC_PREROLL_MS + g_cfg.openHoldMs + 2000);
       latchOpen(g_cfg.openHoldMs);
       break;
 
@@ -682,10 +681,12 @@ void accessTick() {
       strlcpy(g_uid, uid, sizeof(g_uid));
       newTxn();
       ++g_transactions;
+      // Nothing is signalled to the recorder here. It is a separate node with
+      // no wire to this one; it opens its own clip on the approach, and the
+      // console joins the two records on the epoch after the fact (README
+      // §4.3). What this node owes that join is the timestamp in the audit
+      // record, which is why the clock matters more than it used to.
       audit(ST_CARD_READ, EFF_NONE, RSN_NONE, "uid captured");
-      // Pre-roll starts at the card, not at the latch: for a denial to be worth
-      // anything as evidence the clip has to contain the approach.
-      recAssert(REC_PREROLL_MS);
       enter(ST_CARD_READ);
       break;
     }

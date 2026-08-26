@@ -327,11 +327,9 @@ def breadboard_view(path):
          weight="bold")
     text(ex + ew / 2, ey + 174, "MJPEG2SD recorder", 10, "#a9b0ba",
          anchor="middle")
-    text(ex + ew / 2, ey + 192, "AI-Thinker / OV2640", 9.5, "#7f868f",
-         anchor="middle")
+    text(ex + ew / 2, ey + 192, "AI-Thinker on USB-C baseboard", 9.5,
+         "#7f868f", anchor="middle")
     rect(ex + ew / 2 - 26, ey + eh - 10, 52, 14, "#9aa1ab", rx=7)
-    text(ex + ew / 2, ey + eh - 26, "USB-C  -  own supply", 9.5, "#a9b0ba",
-         anchor="middle", style="italic")
 
     # ---- breadboard (bottom left) ----
     bx, by, bw, bh = 60, 800, 620, 200

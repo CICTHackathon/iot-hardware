@@ -1,9 +1,4 @@
 // ESP32 DevKit V1 enforcement node for the Smart Gateway edge tier.
-//
-// Credential capture (RC522 + 4x4 keypad), the access FSM of README §5.1, the
-// latch, and the HTTP surface the web application drives. The display is on
-// this node's own I²C bus — there is no display co-processor and no firmware
-// anywhere else in the enforcement path.
 
 #include <Preferences.h>
 #include <WiFi.h>
@@ -49,29 +44,67 @@ static bool truthy(const char* v) {
   return v[0] == '1' || v[0] == 't' || v[0] == 'T' || v[0] == 'y' || v[0] == 'Y';
 }
 
-bool configSetKey(const char* key, const char* value) {
-  if (!strcmp(key, "closedAngle"))   g_cfg.closedAngle = clampU(value, 0, 180);
-  else if (!strcmp(key, "openAngle"))     g_cfg.openAngle = clampU(value, 0, 180);
-  else if (!strcmp(key, "openHoldMs"))    g_cfg.openHoldMs = clampU(value, 500, 60000);
-  else if (!strcmp(key, "pinTimeoutMs"))  g_cfg.pinTimeoutMs = clampU(value, 2000, 60000);
-  else if (!strcmp(key, "pdpTimeoutMs"))  g_cfg.pdpTimeoutMs = clampU(value, 500, 30000);
-  else if (!strcmp(key, "pinAttempts"))   g_cfg.pinAttempts = clampU(value, 1, 10);
-  else if (!strcmp(key, "requirePin"))    g_cfg.requirePin = truthy(value);
-  else if (!strcmp(key, "degradedAllow")) g_cfg.degradedAllow = truthy(value);
-  else if (!strcmp(key, "buzzerEnabled")) g_cfg.buzzerEnabled = truthy(value);
-  else if (!strcmp(key, "pdpUrl"))      strlcpy(g_cfg.pdpUrl, value, sizeof(g_cfg.pdpUrl));
-  else if (!strcmp(key, "pdpToken"))    strlcpy(g_cfg.pdpToken, value, sizeof(g_cfg.pdpToken));
-  else if (!strcmp(key, "decisionKey")) strlcpy(g_cfg.decisionKey, value, sizeof(g_cfg.decisionKey));
-  else if (!strcmp(key, "apiToken"))    strlcpy(g_cfg.apiToken, value, sizeof(g_cfg.apiToken));
-  else if (!strcmp(key, "doorId"))      strlcpy(g_cfg.doorId, value, sizeof(g_cfg.doorId));
-  else return false;
+// Every settable key, in the order the console renders them. web.cpp walks this
+// to pick a whole settings record out of one request body.
+const char* const kConfigKeys[] = {
+    "closedAngle", "openAngle", "openHoldMs", "pinTimeoutMs", "pdpTimeoutMs",
+    "pinAttempts", "requirePin", "degradedAllow", "buzzerEnabled",
+    "doorId", "pdpUrl", "pdpToken", "decisionKey", "apiToken",
+};
+const size_t kConfigKeyCount = sizeof(kConfigKeys) / sizeof(kConfigKeys[0]);
 
-  // The two angles being equal would leave a latch that never moves and a node
-  // that reports every transit as successful.
-  if (g_cfg.openAngle == g_cfg.closedAngle) {
-    g_cfg = defaultConfig();
+// Writes one key into a candidate record. Deliberately does not validate: a
+// setting that is only wrong in combination with another one cannot be judged
+// until every field of the request has been applied.
+bool configApplyOne(RuntimeConfig* c, const char* key, const char* value) {
+  if (!strcmp(key, "closedAngle"))        c->closedAngle = clampU(value, 0, 180);
+  else if (!strcmp(key, "openAngle"))     c->openAngle = clampU(value, 0, 180);
+  else if (!strcmp(key, "openHoldMs"))    c->openHoldMs = clampU(value, 500, 60000);
+  else if (!strcmp(key, "pinTimeoutMs"))  c->pinTimeoutMs = clampU(value, 2000, 60000);
+  else if (!strcmp(key, "pdpTimeoutMs"))  c->pdpTimeoutMs = clampU(value, 500, 30000);
+  else if (!strcmp(key, "pinAttempts"))   c->pinAttempts = clampU(value, 1, 10);
+  else if (!strcmp(key, "requirePin"))    c->requirePin = truthy(value);
+  else if (!strcmp(key, "degradedAllow")) c->degradedAllow = truthy(value);
+  else if (!strcmp(key, "buzzerEnabled")) c->buzzerEnabled = truthy(value);
+  else if (!strcmp(key, "pdpUrl"))      strlcpy(c->pdpUrl, value, sizeof(c->pdpUrl));
+  else if (!strcmp(key, "pdpToken"))    strlcpy(c->pdpToken, value, sizeof(c->pdpToken));
+  else if (!strcmp(key, "decisionKey")) strlcpy(c->decisionKey, value, sizeof(c->decisionKey));
+  else if (!strcmp(key, "apiToken"))    strlcpy(c->apiToken, value, sizeof(c->apiToken));
+  else if (!strcmp(key, "doorId"))      strlcpy(c->doorId, value, sizeof(c->doorId));
+  else return false;
+  return true;
+}
+
+// Judges a candidate record as a whole. Nothing here can be decided one field
+// at a time, which is the reason the candidate exists.
+bool configValidate(const RuntimeConfig& c, const char** why) {
+  // Equal angles leave a latch that never moves and a node that reports every
+  // transit as successful.
+  if (c.openAngle == c.closedAngle) {
+    if (why) *why = "openAngle and closedAngle must differ";
     return false;
   }
+  // Nothing else here is a pair. openHoldMs needs no relation to the sweep:
+  // latchTick starts the hold when the servo reaches the open angle, not when
+  // the sweep is commanded, so a short hold shortens the wait and never cuts
+  // the opening travel short.
+  return true;
+}
+
+void configCommit(const RuntimeConfig& c) {
+  g_cfg = c;
+  configSave();
+}
+
+// One key, applied atomically. The candidate is what gets written to, so a
+// rejected value leaves the live record untouched — which matters because the
+// API token is in that record, and a node that loses it answers /api/unlock to
+// anyone who can reach port 80.
+bool configSetKey(const char* key, const char* value) {
+  RuntimeConfig c = g_cfg;
+  if (!configApplyOne(&c, key, value)) return false;
+  if (!configValidate(c, nullptr)) return false;
+  g_cfg = c;
   return true;
 }
 
@@ -89,6 +122,22 @@ static void ensureApiToken() {
   g_cfg.apiToken[32] = 0;
   configSave();
   Serial.printf("[api] token generated: %s\n", g_cfg.apiToken);
+}
+
+// NTP is a dependency of this node, not a convenience. The recorder shares no
+// wire with it (README §4.3), so the epoch stamped on an audit record is the
+// only thing the console can correlate it against. Report it once, so §5.2
+// step 4 is something an operator can read off the serial console.
+static void clockReport() {
+  static bool reported = false;
+  if (reported || !clockSet()) return;
+  reported = true;
+  const time_t t = time(nullptr);
+  struct tm tmv;
+  localtime_r(&t, &tmv);
+  char stamp[24];
+  strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", &tmv);
+  Serial.printf("[net] clock set: %s UTC\n", stamp);
 }
 
 static void wifiConnect() {
@@ -162,6 +211,7 @@ void loop() {
       Serial.println("[net] link lost, reconnecting");
       WiFi.reconnect();
     }
+    clockReport();
   }
   delay(1);
 }

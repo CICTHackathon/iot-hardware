@@ -366,7 +366,7 @@ async function gwTick() {
       pill('door', s.door, s.door === 'locked' ? '' : 'warn') +
       pill('angle', s.angle) + pill('uid', s.uid || '—') +
       pill('pin', '*'.repeat(s.pinDigits) || '—') +
-      pill('rec', s.recTrig ? 'asserted' : 'idle', s.recTrig ? 'warn' : '') +
+      pill('clock', s.clockSet ? 'set' : 'unset', s.clockSet ? '' : 'warn') +
       pill('transactions', s.transactions) + pill('grants', s.grants, 'ok') +
       pill('denials', s.denials, 'bad') +
       pill('degraded', s.degraded, s.degraded ? 'warn' : '') +
@@ -459,7 +459,7 @@ const CAM_KEYS = ['cellDelta','motionPercent','sampleIdle','sampleActive','minFr
                   'clearFrames','classifierPercent','mlProbability','jpegQuality',
                   'lampBrightness','frameSize','mlUse','hMirror','vFlip','lampOnEvent','saveEvents'];
 const ctx = $('#ov').getContext('2d');
-let GW = 32, GH = 24, camEvents = [], streamOn = false;
+let GW = 32, GH = 24, camEvents = [], streamOn = false, camStatus = null;
 function camPost(k, v) {
   fetch(N.cam.url + '/api/config?' + k + '=' + encodeURIComponent(v), {method: 'POST'}).catch(() => {});
 }
@@ -516,6 +516,7 @@ async function camTick() {
     $('#camPills').innerHTML = pill('movement recorder', e.message, 'bad');
     return;
   }
+  camStatus = st;
   GW = st.gw; GH = st.gh;
   const cv = $('#ov');
   if (cv.width != GW) { cv.width = GW; cv.height = GH; }
@@ -527,7 +528,8 @@ async function camTick() {
       pill('stage1', st.s1 < 0 ? '–' : st.s1.toFixed(2)) +
       pill('stage2', st.s2 < 0 ? '–' : st.s2.toFixed(2)) +
       pill('decode', st.decodeMs + 'ms') + pill('infer', st.mlMs + 'ms') +
-      pill('psram', st.psram + 'K');
+      pill('psram', st.psram + 'K') +
+      pill('clock', st.clockSet ? 'set' : 'unset', st.clockSet ? '' : 'warn');
   $('#camLinks').innerHTML =
       `<a href="${N.cam.url}/api/dataset.csv" download>dataset.csv</a> ·
        <a href="${N.cam.url}/dav/" target="_blank">recordings</a> ·
@@ -555,25 +557,40 @@ document.addEventListener('click', async ev => {
 });
 $('#refreshprev').onclick = () => { $('#mlprev').src = N.cam.url + '/api/mlpreview.bmp?t=' + Date.now(); };
 // ------------------------------------------------------------- timeline ---
-// Both nodes report an epoch and an uptime. Correlating on the epoch is the
-// only join that means anything, so when either clock is unset the table says
-// so instead of lining up two unrelated stopwatches and calling it evidence.
+// The two nodes share no wire, so the epoch is the only thing that can join a
+// credential event to a motion event. Both nodes report whether their clock is
+// actually set; when either is not, the table says so instead of lining up two
+// unrelated stopwatches and calling it evidence.
+//
+// The check is on node status rather than on the events, so an unsynchronised
+// bench is named before anything has been recorded, rather than looking like a
+// door nobody has walked through yet.
 $('#win').addEventListener('input', e => {
   e.target.parentElement.querySelector('output').value = e.target.value;
   renderTimeline();
 });
 function renderTimeline() {
   const win = +$('#win').value;
-  const cred = gwEvents.filter(e => e.effect === 'permit' || e.effect === 'deny')
-                       .map(e => ({t: e.epoch, e}));
-  const motion = camEvents.filter(e => e.epoch).map(e => ({t: e.epoch, e}));
-  if (cred.some(c => !c.t) || (camEvents.length && !motion.length)) {
+  // A node that has not answered yet is not a node with a bad clock: an
+  // unreachable half greys out, it does not accuse the other one of drifting.
+  const noClock = [];
+  if (gwStatus && !gwStatus.clockSet) noClock.push('the enforcement node');
+  if (camStatus && !camStatus.clockSet) noClock.push('the recorder');
+  if (noClock.length) {
     $('#tlPills').innerHTML = pill('correlation', 'unavailable — a clock is unset', 'warn');
     $('#tl').innerHTML =
-      `<tr><td colspan="5" class="miss">One of the nodes has no time. Both need NTP,
-       or a joined timeline is two stopwatches started at different moments.</td></tr>`;
+      `<tr><td colspan="5" class="miss">No time on ${esc(noClock.join(' and '))}.
+       Both nodes need NTP, or a joined timeline is two stopwatches started at
+       different moments.</td></tr>`;
     return;
   }
+  // Records written before NTP landed carry no epoch. They are dropped from the
+  // join and counted, rather than blanking a table that is now correlating
+  // perfectly well — they age out of both rings on their own.
+  const credAll = gwEvents.filter(e => e.effect === 'permit' || e.effect === 'deny');
+  const cred = credAll.filter(e => e.epoch).map(e => ({t: e.epoch, e}));
+  const motion = camEvents.filter(e => e.epoch).map(e => ({t: e.epoch, e}));
+  const unstamped = (credAll.length - cred.length) + (camEvents.length - motion.length);
   const usedMotion = new Set();
   const rows = [];
   let c1 = 0, c2 = 0, c3 = 0;
@@ -595,7 +612,8 @@ function renderTimeline() {
   rows.sort((a, b) => b.t - a.t);
   $('#tlPills').innerHTML =
       pill('attested transits', c1, 'ok') + pill('unattested motion', c2, c2 ? 'warn' : '') +
-      pill('unconsummated grants', c3, c3 ? 'warn' : '') + pill('window', '±' + win + 's');
+      pill('unconsummated grants', c3, c3 ? 'warn' : '') + pill('window', '±' + win + 's') +
+      (unstamped ? pill('not joinable', unstamped + ' before NTP', 'warn') : '');
   $('#tl').innerHTML = rows.map(r => `<tr>
     <td>${new Date(r.t * 1000).toLocaleTimeString()}</td>
     <td class="${r.cls}">${r.label}</td>
@@ -637,12 +655,17 @@ async function loadGwConfig() {
          placeholder="${v === 'set' ? 'set — type to replace' : ''}">`;
     return `<div class="row"><label>${label}</label>${input}</div>`;
   }).join('') + '<div class="row"><label></label><button id="cSave">apply</button></div>';
+  // One request, one transaction. Applying a field at a time meant swapping the
+  // two servo angles had to pass through a pair the node is right to refuse,
+  // and a rejection halfway down the form left the rest of it unapplied.
   $('#cSave').onclick = async () => {
+    const body = {};
     for (const el of $('#gwCfg').querySelectorAll('[data-k]')) {
       if (el.tagName === 'INPUT' && el.value === '') continue;    // untouched secret
-      try { await api('gw', '/api/config', {json: {key: el.dataset.k, value: el.value}}); }
-      catch (e) { alert(el.dataset.k + ': ' + e.message); }
+      body[el.dataset.k] = el.value;
     }
+    try { await api('gw', '/api/config', {json: body}); }
+    catch (e) { alert('settings not applied — ' + e.message); }
     loadGwConfig();
   };
 }

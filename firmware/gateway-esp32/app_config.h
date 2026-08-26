@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <time.h>
 
 // ESP32 DevKit V1 (ESP32-WROOM-32, 30-pin), README §4.2. Four of these pins are
 // not silkscreened with their GPIO number, so the silkscreen is in the comment:
@@ -12,17 +13,22 @@
 #define PIN_RC522_MOSI  23      // D23
 #define PIN_RC522_MISO  19      // D19
 
-#define PIN_I2C_SDA     21      // D21 — display + recorder
+// The whole I²C bus is the LCD backpack and nothing else. The recorder used to
+// be a second device on this pair; it is now a standalone node sharing no net
+// with this one (README §4.3), so the bus never leaves the enclosure.
+#define PIN_I2C_SDA     21      // D21 — display
 #define PIN_I2C_SCL     22      // D22
-#define I2C_HZ      100000UL    // through the BSS138; 400 kHz works, 100 kHz is
-                                // what the translator is comfortable with on
-                                // breadboard capacitance
+#define I2C_HZ      100000UL    // 400 kHz works; 100 kHz is what the backpack is
+                                // comfortable with on breadboard capacitance
 
 #define PIN_SERVO       17      // TX2 — LEDC-driven 50 Hz PWM
 #define PIN_LED_GRANT   25      // D25
 #define PIN_LED_DENY    33      // D33
 #define PIN_BUZZER      32      // D32 — active high
-#define PIN_REC_TRIG     4      // D4  — level-triggered recording request
+
+// D4 and RX2 (GPIO 4 and 16) are the node's only spares. D4 carried REC_TRIG to
+// the recorder before the two nodes were separated; nothing drives it now, and
+// this firmware deliberately does not claim it.
 
 // Keypad. Rows are driven low one at a time; the columns are input-only pins
 // with no internal pull-up, so each carries a discrete 10 kΩ to 3V3 (§4.2).
@@ -51,7 +57,6 @@ static const char    KEYPAD_MAP[4][4] = {{'1', '2', '3', 'A'},
 #define PIN_MAX_ATTEMPTS  3
 
 #define SERVO_STEP_MS     10    // one degree per tick — a sweep, not a slam
-#define REC_PREROLL_MS  1200    // REC_TRIG asserted this far ahead of actuation
 
 #define AUDIT_RING     48       // records held for the web tier to drain
 #define ACL_ENTRIES    16       // cached authorisation set, §3
@@ -68,6 +73,16 @@ static const char    KEYPAD_MAP[4][4] = {{'1', '2', '3', 'A'},
 
 #define NTP_SERVER_1 "pool.ntp.org"
 #define NTP_SERVER_2 "time.nist.gov"
+
+// A clock counts as set once it is past a moment this firmware could not have
+// been built before. The console joins credential events to motion events on
+// the epoch and on nothing else (README §4.3), so this predicate is what
+// separates evidence from two stopwatches started at different moments. Both
+// firmwares carry the identical test; a node that fails it says so rather than
+// reporting 1970 as a time.
+#define CLOCK_SET_AFTER 1700000000L   // 2023-11-14, well before any build here
+
+inline bool clockSet() { return time(nullptr) > CLOCK_SET_AFTER; }
 
 // Runtime configuration (persisted in NVS, namespace "gateway")
 struct RuntimeConfig {
@@ -113,4 +128,16 @@ extern RuntimeConfig g_cfg;
 
 void configLoad();
 void configSave();
-bool configSetKey(const char* key, const char* value);   // one setting, from HTTP
+
+// Settings are edited through a candidate record: fields are applied to a copy,
+// the copy is judged as a whole, and only then does it become the live one. A
+// pair of settings that is only invalid in combination — the two servo angles —
+// cannot be checked any other way, and a rejection that has already touched the
+// live record is how a node loses its API token to a typo.
+extern const char* const kConfigKeys[];
+extern const size_t      kConfigKeyCount;
+
+bool configApplyOne(RuntimeConfig* into, const char* key, const char* value);
+bool configValidate(const RuntimeConfig& candidate, const char** why);
+void configCommit(const RuntimeConfig& candidate);        // assigns and persists
+bool configSetKey(const char* key, const char* value);    // one setting, atomic

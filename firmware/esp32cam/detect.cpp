@@ -270,8 +270,11 @@ void decide(const MotionResult& m, const camera_fb_t* fb, NodeStatus* s) {
   DetectionEvent e = {};
   e.id = g_nextEventId++;
   e.uptimeMs = millis();
-  const time_t now = time(nullptr);
-  e.epoch = (now > 1700000000) ? now : 0;   // 0 until NTP has landed
+  // 0 until NTP has landed. A zero here is not a missing nicety: the console
+  // joins this event to a credential event on the epoch and on nothing else
+  // (README §4.3), so an event stamped 1970 is an event that cannot be
+  // correlated, and it says so rather than pretending otherwise.
+  e.epoch = clockSet() ? time(nullptr) : 0;
   e.frames = s->persistence;
   e.x0 = m.x0; e.y0 = m.y0; e.x1 = m.x1; e.y1 = m.y1;
   e.label = -1;

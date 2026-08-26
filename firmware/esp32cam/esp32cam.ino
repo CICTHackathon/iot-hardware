@@ -1,4 +1,10 @@
 // ESP32-CAM (OV2640) movement recorder for the Smart Gateway edge tier.
+//
+// A standalone node. It has its own USB-C, its own WiFi and its own detector,
+// and it shares no net with the enforcement node — no trigger line, no bus,
+// not even a ground (README §4.3). Nothing here is told that a badge was
+// presented; clips are opened on this node's own motion detection and stamped
+// with the epoch, and the console joins them to credential events afterwards.
 
 #include <Preferences.h>
 #include <WiFi.h>
@@ -85,6 +91,22 @@ static bool cameraInit() {
   return true;
 }
 
+// NTP is a dependency of this node, not a convenience. It shares no wire with
+// the other one (README §4.3), so the epoch it stamps on its records is the
+// only thing the console can correlate them against. Report it once, so §5.2
+// step 4 is something an operator can read off the serial console.
+static void clockReport() {
+  static bool reported = false;
+  if (reported || !clockSet()) return;
+  reported = true;
+  const time_t t = time(nullptr);
+  struct tm tmv;
+  localtime_r(&t, &tmv);
+  char stamp[24];
+  strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", &tmv);
+  Serial.printf("[net] clock set: %s UTC\n", stamp);
+}
+
 static void wifiConnect() {
   Preferences p;
   p.begin("esp32cam", true);
@@ -156,6 +178,7 @@ void loop() {
     }
     led = !led;
     digitalWrite(CAM_PIN_STATUS_LED, led ? LOW : HIGH);
+    clockReport();
   }
   delay(100);
 }

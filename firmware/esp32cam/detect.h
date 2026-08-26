@@ -87,8 +87,10 @@ void       detectResetReference();                // after a sensor change
 bool       detectMlPreview(uint8_t* dst, int* w, int* h);
 
 // Sink invoked from the capture task whenever an event is decided. This is the
-// seam for the uplink described in README §5.2 (MQTT access requests, clip
-// correlation); nothing in this firmware transmits an event by itself.
+// seam for the clip uplink of README §5.2; nothing in this firmware transmits
+// an event by itself. Access requests and decisions are explicitly not this
+// node's traffic — the enforcement node carries its own, and this one is never
+// told that a badge was presented.
 typedef void (*EventSink)(const DetectionEvent&);
 void detectSetSink(EventSink sink);
 

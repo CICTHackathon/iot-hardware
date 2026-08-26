@@ -45,8 +45,13 @@ void storageRemoveTree(const String& path) {
 }
 
 bool storageBegin() {
-  // 1-line mode is mandatory here, not a tuning choice: it releases GPIO 12/13
-  // for the I2C link to the enforcement node (README §4.3).
+  // 1-line mode is mandatory here, not a tuning choice. In 4-bit mode SD_MMC
+  // claims GPIO 4 as DATA1, and GPIO 4 on this module is the illumination lamp:
+  // the lamp then flickers on every card write and lampSet() fights the SD
+  // driver for the pin. 1-line mode uses DATA0 alone and leaves 4, 12 and 13
+  // free. (It used to be described as freeing 12/13 for an I2C link to the
+  // enforcement node. That link is gone — this node shares no wire with it,
+  // README §4.3 — and the lamp is the reason that outlived it.)
   if (SD_MMC.begin("/sdcard", true)) {
     if (SD_MMC.cardType() != CARD_NONE) {
       g_fs = &SD_MMC;
