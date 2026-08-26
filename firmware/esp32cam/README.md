@@ -12,9 +12,9 @@ Edge-tier camera node for the Smart Gateway: motion detection, a two-stage class
 | `ml.cpp/.h` | Stage 2: wrapper over the Edge Impulse Arduino library |
 | `classifier_weights.h` | Stage-1 parameters — generated, see below |
 | `storage.cpp/.h` | SD_MMC (1-line) or LittleFS, event files, reclaim |
-| `web.cpp/.h` | UI + JSON API on :80, MJPEG stream on :81 |
+| `web.cpp/.h` | Console + JSON API on :80, MJPEG stream on :81 |
 | `webdav.cpp` | WebDAV methods on `/dav` |
-| `web_ui.h` | The operator page, embedded in flash |
+| `console_ui.h` | The shared console, embedded in flash — **generated** by `console/build.py` |
 | `tools/train_classifier.py` | Refits stage 1 from labelled events |
 
 ## Build and flash
@@ -41,7 +41,7 @@ Port 80:
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/` | Operator page |
+| GET | `/` | Operator console — [`console/index.html`](../../console/index.html), shared with the enforcement node |
 | GET | `/api/status` | Counters, timings, last scores, changed-cell mask |
 | GET/POST | `/api/config` | Read all settings / set one (`?key=value`) |
 | GET | `/api/events` | Recent events as JSON |

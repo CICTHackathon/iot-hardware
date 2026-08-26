@@ -9,7 +9,7 @@ The architecture separates *decision* from *enforcement*, following the referenc
 
 - The **Policy Decision Point (PDP)**, an LLM-mediated rule engine that evaluates natural-language organisational policy against structured request attributes.
 - The **Policy Enforcement Point (PEP)**, the **Policy Information Point (PIP)** and the **movement recording subsystem**.
-Concretely, this repository implements a **laboratory-scale mini gateway**: an **ESP32 DevKit V1** node performing multi-factor credential capture (RFID + PIN) and electromechanical actuation, coupled to an ESP32-CAM node performing event-triggered motion recording, derived from the `ESP32-CAM_MJPEG2SD` firmware [3]. The RC522/LCD/servo wiring follows the ESP32 door-access reference of Robotique Site [6], with its companion video walkthrough [7]; the keypad, annunciator and PIN logic are carried over from the BanLinhKien RC522 door-lock kit project [4]. Both references are stand-alone hard-coded locks, and both are extended here into a single network-attached, policy-governed, auditable enforcement node.
+Concretely, this repository implements a **laboratory-scale mini gateway**: an **ESP32 DevKit V1** node performing multi-factor credential capture (RFID + PIN) and electromechanical actuation, coupled to an ESP32-CAM node performing event-triggered motion recording, derived from the `ESP32-CAM_MJPEG2SD` firmware [3]. The RC522/LCD/servo wiring follows the ESP32 door-access reference of Robotique Site [6], with its companion video walkthrough [8]; the keypad, annunciator and PIN logic are carried over from the BanLinhKien RC522 door-lock kit project [4]. Both references are stand-alone hard-coded locks, and both are extended here into a single network-attached, policy-governed, auditable enforcement node.
 
 > [!CAUTION]
 > **Credential strength.** An RC522 UID is an *identifier*, not a *secret*: MIFARE Classic UIDs are trivially cloned, and the Crypto-1 cipher has been broken in the open literature since 2008 [5]. The PIN factor and the visual attestation exist precisely because the card carries no weight on its own. Any field deployment requires cryptographic card authentication (DESFire EV2/EV3 or equivalent).
@@ -21,9 +21,9 @@ Concretely, this repository implements a **laboratory-scale mini gateway**: an *
 ```
 iot-hardware/
 ├── firmware/
-│   ├── gateway-esp32/                   # Enforcement node (FSM, RC522, keypad, servo)
-│   ├── display-uno/                     # Display co-processor (I2C slave, 1602A in 4-bit)
+│   ├── gateway-esp32/                   # Enforcement node (FSM, RC522, keypad, LCD, servo)
 │   └── esp32cam/                        # Integration layer over ESP32-CAM_MJPEG2SD
+├── console/                             # Operator console (one page, both nodes)
 ├── schematic/                           # EAGLE sheet + breadboard/schematic generator
 ├── protocol/
 ├── docs/
@@ -36,11 +36,9 @@ iot-hardware/
 ```mermaid
 flowchart LR
     subgraph Edge["Edge Tier"]
-        A["ESP32 DevKit V1<br/>PEP · credential capture · actuation"]
+        A["ESP32 DevKit V1<br/>PEP · credential capture · actuation<br/>HTTP API on :80"]
         C["ESP32-CAM<br/>movement recorder · uplink"]
-        U["Arduino UNO R3<br/>display co-processor · 5 V island"]
         A -- "trigger line + I²C metadata" --> C
-        A -- "masked display text (I²C)" --> U
     end
 
     subgraph Cloud["Decision Tier"]
@@ -49,9 +47,13 @@ flowchart LR
         L[("Immutable audit log")]
     end
 
-    C -- "AccessRequest (JSON/MQTT)" --> P
-    P -- "AccessDecision (signed)" --> C
+    W["Operator console<br/>one page, served by either node"]
+
+    A -- "AccessRequest (HTTP/JSON)" --> P
+    P -- "AccessDecision (signed)" --> A
     C -- "clip + telemetry (HTTPS/FTP)" --> L
+    W <-- "decisions · overrides · audit · cached set" --> A
+    W <-- "stream · detections · detector settings" --> C
     P <--> D
 ```
 
@@ -79,21 +81,41 @@ The division of responsibility is deliberate and strict:
 |---|---|---|
 | 1 | ESP32 DevKit V1 (ESP32-WROOM-32, 30-pin) | Enforcement node / credential controller |
 | 1 | MFRC522 (RC522) 13.56 MHz reader | ISO/IEC 14443A credential capture |
-| 1 | LCD 1602A, bare 16-way header (HD44780) | Operator prompt and state display |
-| 1 | Arduino UNO R3 (ATmega328P) | Display co-processor — see §4.3 |
-| 1 | 10 kΩ potentiometer | LCD contrast (`Vo`) |
-| 1 | 220 Ω resistor | LCD backlight anode |
+| 1 | LCD 2004A with PCF8574 I²C backpack [7] | Operator prompt and state display |
+| 1 | Arduino UNO R3 (ATmega328P) | **Bench 5 V supply** — see §4.1 |
 | 1 | 4×4 matrix membrane keypad | PIN entry (second authentication factor) |
 | 4 | 10 kΩ resistors | Pull-ups for the keypad columns — see §4.2 |
-| 1 | BSS138 bidirectional level translator (2-channel) | 5 V Arduino onto the 3.3 V I²C bus |
 | 1 | SG90 micro servo | Latch actuation (bench surrogate for a solenoid strike) |
 | 2 | LED, red and green, with 220 Ω series resistors | Denial / grant annunciation |
 | 1 | Passive buzzer | Audible denial and tamper alarm |
 | 1 | ESP32-CAM (AI-Thinker, OV2640) + microSD | Movement recording and network uplink |
-| 1 | Breadboard, jumper set, 5 V ≥ 2 A supply | Bench harness |
+| 1 | USB-C programmer baseboard for the ESP32-CAM | Powers and flashes the recorder — see §4.3 |
+| 1 | Breadboard and jumper set | Bench harness |
+| 1 | USB supply — host PC on the bench, 5 V USB PSU in service | Feeds the UNO, which feeds the 5 V rail |
 
 > [!WARNING]
-> **Power distribution.** The servo's stall current and the ESP32-CAM's transmit bursts must not be drawn through the DevKit's on-board regulator. Both are fed from the external 5 V rail with grounds commoned to the ESP32. Omitting this is the single most common cause of spurious resets on this bench.
+> **Power distribution.** The servo's stall current must not be drawn through the DevKit's on-board regulator. It is fed from the 5 V rail directly, with grounds commoned to the ESP32. Omitting this is the single most common cause of spurious resets on this bench.
+
+> [!CAUTION]
+> **A USB-powered UNO cannot supply this bench, and the servo is what breaks it.** A host USB port allows 500 mA, and the UNO's own polyfuse is rated the same. The load is not:
+>
+> | Load | Typical | Worst case |
+> |---|---|---|
+> | ESP32 DevKit, WiFi transmitting | 120 mA | ~300 mA |
+> | SG90 servo, moving → stalled | ~200 mA | **~700 mA** |
+> | LCD 2004A with backlight | 30 mA | 40 mA |
+> | RC522 | 15 mA | 26 mA |
+> | LEDs and buzzer | 20 mA | 45 mA |
+> | UNO itself | 45 mA | 50 mA |
+> | **Total** | **~430 mA** | **~1.16 A** |
+>
+> Idle fits; a latch actuation during a WiFi transmit does not. The rail sags, the ESP32 browns out mid-transaction, and the failure looks like random resets on grant rather than like a power problem. Either give the servo its own 5 V ≥ 1 A supply with grounds commoned, or power the UNO from a 7–12 V barrel jack so its regulator sources the rail instead of the USB port — and even then expect the regulator to run hot.
+
+> [!CAUTION]
+> **Two power domains, and they never share a 5 V rail.** The enforcement node, the servo and the annunciators run from the UNO's 5 V through `VIN`; the recorder runs from its own USB-C. The domains meet at **ground and nowhere else**.
+
+> [!CAUTION]
+> **One supply per board at a time.** The UNO's `5V` header pin sits *downstream* of both the regulator and the USB power-selector MOSFET. With `VIN` unpowered that MOSFET conducts, so the `5V` pin is tied to the USB 5 V line through the board's polyfuse. Feeding an external supply into that pin while the USB cable is plugged in back-feeds the host port, and the polyfuse does not protect in that direction — the usual result is the PC shutting the port down for overcurrent. The same applies to the ESP32's `VIN`. Unplug one before connecting the other.
 
 ### 4.2 Pin Assignment (ESP32 DevKit V1)
 
@@ -107,7 +129,7 @@ The **Silkscreen** column is what is actually printed on the board, and it is no
 | RC522 `RST` | GPIO 2 | `D2` | [6] | Module reset |
 | RC522 `SCK / MOSI / MISO` | GPIO 18 / 23 / 19 | `D18` / `D23` / `D19` | [6] | Hardware VSPI |
 | RC522 `3.3V`, `GND` | 3V3, GND | `3V3`, `GND` | [6] | Native 3.3 V — no translation |
-| I²C `SDA` / `SCL` | GPIO 21 / GPIO 22 | `D21` / `D22` | [6] | Shared bus: display co-processor + recorder |
+| I²C `SDA` / `SCL` | GPIO 21 / GPIO 22 | `D21` / `D22` | [6] | Shared bus: LCD backpack + recorder |
 | Servo signal | GPIO 17 | **`TX2`** | [6] | LEDC-driven 50 Hz PWM |
 | Keypad rows R1–R4 | GPIO 13, 14, 27, 26 | `D13`, `D14`, `D27`, `D26` | this project | Driven low one row at a time |
 | Keypad columns C1–C4 | GPIO 34, 35, 36, 39 | `D34`, `D35`, **`VP`**, **`VN`** | this project | **Input-only** — external 10 kΩ pull-ups required |
@@ -134,40 +156,48 @@ The **Silkscreen** column is what is actually printed on the board, and it is no
 
 ### 4.3 Inter-node Interface
 
-Three nodes share one I²C bus. The ESP32 is the master; the recorder and the display co-processor are slaves, and one dedicated hard-wired line carries the recording trigger.
+The ESP32 is the I²C master. The recorder is a slave; the LCD backpack is a third address on the same pair. One dedicated hard-wired line carries the recording trigger.
 
-| Line | ESP32 DevKit V1 | ESP32-CAM | Arduino UNO R3 | Purpose |
+| Line | ESP32 DevKit V1 | ESP32-CAM | LCD backpack | Purpose |
 |---|---|---|---|---|
-| `SDA` / `SCL` | GPIO 21 / GPIO 22 | GPIO 13 / GPIO 12 | `A4` / `A5` (0x08) | Event metadata, decision return, display text |
+| `SDA` / `SCL` | GPIO 21 / GPIO 22 | GPIO 13 / GPIO 12 | 0x27 | Event metadata, decision return, display text |
 | `REC_TRIG` | GPIO 4 | GPIO 16 | — | Level-triggered recording request |
-| `GND` | GND | GND | GND | Common reference |
-
-> [!NOTE]
-> **The ESP32↔recorder branch needs no level translation** — both are 3.3 V parts. The UNO design required a MOSFET translator on `SDA`/`SCL` and a resistive divider on the trigger line; both are deleted. GPIO 12 and 13 are available on the camera only because `ESP32-CAM_MJPEG2SD` is configured for **1-line SD (`SD_MMC` 1-bit) mode**, which releases the SDIO data lines. That is the stock configuration of the firmware [3].
-
-#### Why the display has its own processor
-
-The 1602A used here is the **bare 16-way module**, with no PCF8574 backpack. An HD44780 running at V<sub>DD</sub> = 5 V specifies V<sub>IH</sub> ≥ 0.7 × V<sub>DD</sub> = **3.5 V** on `RS`, `E` and `D4`–`D7`. The ESP32 drives 3.3 V. That is below the threshold: it usually works on a bench and is out of spec, and it fails first when the display is cold or the supply sags — exactly when an operator is standing at the door.
-
-Driving it from a 5 V Arduino removes the margin problem, and the parallel bus costs six pins the ESP32 does not have spare (§4.2 leaves exactly one). The Arduino is therefore a **display peripheral, not a second decision-maker**:
-
-| Line | LCD 1602A | Arduino UNO R3 |
-|---|---|---|
-| `RS` | pin 4 | `D8` |
-| `E` | pin 6 | `D9` |
-| `D4` – `D7` | pins 11–14 | `D10` – `D13` |
-| `R/W` | pin 5 | GND — write-only |
-| `Vo` | pin 3 | 10 kΩ potentiometer wiper |
-| `A` / `K` | pins 15–16 | +5 V through 220 Ω / GND |
-| `D0` – `D3` | pins 7–10 | unconnected — 4-bit mode |
-
-So the library instantiation is `LiquidCrystal(8, 9, 10, 11, 12, 13)`.
+| `GND` | GND | GND | GND | **Common reference — mandatory** |
+| Supply | 5 V rail (from the UNO) | own USB-C | **`3V3`**, see below | **Never linked** — one source per board |
 
 > [!IMPORTANT]
-> **The co-processor never sees a PIN.** §5.1 requires that keypad digits are hashed on the ESP32 and the plaintext buffer zeroised on every state exit. The ESP32 therefore sends the display **already-rendered and already-masked** — the literal characters `****`, never the digits. Sending the PIN to a second MCU to be masked there would put plaintext credentials on a shared bus and defeat the property outright.
+> **Separate supplies still need one shared ground.** I²C signals are voltages measured against ground, so the UNO's 5 V domain and the ESP32's domain must agree on a reference. Cut `GND` and the bus is dead even with `SDA`/`SCL` wired perfectly — which is why ground crosses the domain boundary and 5 V does not.
 
-> [!WARNING]
-> **The Arduino is a 5 V part on a 3.3 V bus.** Its `A4`/`A5` pins idle at 5 V through the bus pull-ups, which is above the ESP32's 3.6 V absolute maximum. The BSS138 sits on the Arduino side of the link — 5 V high side, 3.3 V low side — and its low-side reference comes from the ESP32's `3V3` pin. Only the translated pair leaves the display subsystem, so nothing above 3.3 V can reach the ESP32 even if the Arduino is powered and the ESP32 is not.
+> [!NOTE]
+> **The ESP32↔recorder branch needs no level translation** — both are 3.3 V parts, so only `SDA`, `SCL`, `REC_TRIG` and `GND` run between them; the recorder takes its power from its own USB-C.
+
+> [!NOTE]
+> **The baseboard does not change the pin map.** The AI-Thinker module sits on headers and the baseboard passes them straight through, adding only USB-C, a CH340 bridge and an auto-reset circuit. GPIO 12, 13 and 16 remain exactly as assigned above. It does remove two chores: no FTDI adapter, and no jumper from `GPIO0` to `GND` to enter the bootloader — the auto-reset circuit drives `EN` and `GPIO0` from the serial handshake lines.
+
+> [!CAUTION]
+> **Do not also feed the recorder's `5V` pin from the rail.** The baseboard already drives that pin from USB-C, so an external supply on it parallels two sources through the module — the same back-feed hazard as the UNO's `5V` pin. The figures deliberately show no 5 V wire to the recorder. GPIO 12 and 13 are available on the camera only because `ESP32-CAM_MJPEG2SD` is configured for **1-line SD (`SD_MMC` 1-bit) mode**, which releases the SDIO data lines. That is the stock configuration of the firmware [3].
+
+#### The backpack runs from 3V3, not 5 V
+
+I²C is an **open-drain** bus: no device ever drives a line high. Devices only pull lines low, and the high level comes entirely from pull-up resistors. On this module those pull-ups live on the backpack and are tied to the backpack's own supply — so whatever the backpack is powered from is what the bus idles at.
+
+Powered from 5 V, the bus would idle at 5 V and put that on `GPIO21`/`GPIO22`, above the ESP32's 3.6 V absolute maximum. Powered from the ESP32's `3V3` pin, the pull-ups sit at 3.3 V and the bus is 3.3 V end to end. **That is why no level translator appears in the figures** — not because the problem does not exist, but because the supply choice removes it.
+
+> [!CAUTION]
+> **`VCC` on the backpack goes to `3V3`, never to the 5 V rail.** The module [7] is *specified* at 5 VDC, so wiring it to the rail is the obvious thing to do and it will appear to work — the ESP32's ESD clamp diodes drag the bus down to roughly 3.9 V by conducting into the 3.3 V rail. That is out of spec, it stresses the pins, and it can lift the 3.3 V rail on a lightly loaded board. If you want the backpack at 5 V, a BSS138 bidirectional translator in the `SDA`/`SCL` pair is mandatory, not optional.
+
+> [!NOTE]
+> **The cost of running at 3V3 is contrast.** An HD44780 at 3.3 V is dimmer and lower-contrast than at 5 V, and on a 20×4 that is more noticeable than on a 16×2. Adjust the backpack's contrast trimmer before concluding the wiring is wrong — a blank-looking panel with a live backlight is almost always contrast, not I²C. If it cannot be made readable, the fix is 5 V **plus** a BSS138, not 5 V alone.
+
+#### What the Arduino is doing here
+
+Nothing electrical beyond supplying 5 V. It has **no signal connection** to the ESP32 and **no firmware role**: its USB inlet feeds the breadboard's 5 V rail, which powers the ESP32's `VIN` and the servo, and its ground is commoned with everything else.
+
+> [!NOTE]
+> This is a bench convenience, not a design choice worth keeping. A 5 V ≥ 2 A supply into the same rail does the job better for the price of a barrel jack — see the current budget in §4.1 for why the UNO is marginal here. The UNO earns its place only while it is also the thing plugged into your laptop.
+
+> [!CAUTION]
+> **One supply per board at a time.** The UNO's `5V` header pin sits *downstream* of both the regulator and the USB power-selector MOSFET. With `VIN` unpowered that MOSFET conducts, so the `5V` pin is tied to the USB 5 V line through the board's polyfuse. Connecting a second 5 V supply to the rail while the UNO's USB is plugged in back-feeds the host port, and the polyfuse does not protect in that direction. The same applies to the recorder's `5V` pin, which its baseboard already drives.
 
 ### 4.4 Schematic and Breadboard
 
@@ -175,12 +205,10 @@ The bench wiring is documented in three complementary forms, all under `schemati
 
 | Artefact | Format | Maintained by | Status |
 |---|---|---|---|
-| `smart-gateway-schematic.svg` / `.png` | SVG / PNG | Generated by `svggen.py` | **Normative** — net-level interconnect, sheet 1 |
-| `smart-gateway-breadboard.svg` / `.png` | SVG / PNG | Generated by `svggen.py` | Current — physical placement, sheet 1 |
-| `smart-gateway-display.svg` / `.png` | SVG / PNG | Generated by `svggen.py` | **Normative** — display subsystem, sheet 2 |
+| `smart-gateway-schematic.svg` / `.png` | SVG / PNG | Generated by `svggen.py` | **Normative** — net-level interconnect |
+| `smart-gateway-breadboard.svg` / `.png` | SVG / PNG | Generated by `svggen.py` | Current — physical placement |
 | `smart-gateway.sch` | EAGLE 7.3.0 XML | Hand-edited in EAGLE | **Stale** — see below |
 
-The drawings are split into two sheets. Sheet 1 is the enforcement node and treats the display as a single block with four wires; sheet 2 opens that block up. The split is not cosmetic — sheet 2 is a **5 V island**, and the boundary between the sheets is exactly the boundary the BSS138 defends.
 
 **Net-level view.** Every net, with the pin names of §4.2 on both ends:
 
@@ -189,10 +217,6 @@ The drawings are split into two sheets. Sheet 1 is the enforcement node and trea
 **Breadboard view.** The same wiring as it sits on the bench:
 
 ![Smart Gateway breadboard view](schematic/smart-gateway-breadboard.png)
-
-**Sheet 2 — display subsystem.** The bare 1602A, its contrast trimmer, the Arduino that drives it and the translator that isolates it:
-
-![Display subsystem](schematic/smart-gateway-display.png)
 
 Regenerate both figures after any change to the pin assignment:
 
@@ -204,7 +228,7 @@ sh schematic/schematic.sh
 > `svggen.py` declares the two 15-way DevKit headers once, in the physical order of the board, and every jumper is expressed as an endpoint on one of those pins. A wire routed to a pin that does not exist raises a `KeyError` at generation time rather than producing a plausible-looking but wrong diagram.
 
 > [!CAUTION]
-> **`smart-gateway.sch` still describes the retired Arduino UNO node** — part `U1` is `ARDUINO_UNO` and its nets carry `D2`–`D13`/`A0`–`A5` pin names. It has *not* been converted to the ESP32 assignment of §4.2 and must not be used for wiring. Until it is redrawn in EAGLE, `smart-gateway-schematic.svg` is the normative net-level reference. The conversion is not a rename: the symbol needs a 30-pin DevKit outline, the SPI and I²C nets move to different pins, the trigger line gets its own pin instead of sharing the buzzer gate, the level translator moves from the camera branch to the display branch, and the LCD is no longer an I²C part at all — it hangs off a second MCU (§4.3) that the sheet does not yet contain.
+> **`smart-gateway.sch` still describes the retired Arduino UNO node** — part `U1` is `ARDUINO_UNO` and its nets carry `D2`–`D13`/`A0`–`A5` pin names. It has *not* been converted to the ESP32 assignment of §4.2 and must not be used for wiring. Until it is redrawn in EAGLE, `smart-gateway-schematic.svg` is the normative net-level reference. The conversion is not a rename: the symbol needs a 30-pin DevKit outline, the SPI and I²C nets move to different pins, the trigger line gets its own pin instead of sharing the buzzer gate, the LCD1602_I2C deviceset is replaced by a 20×4 backpack at 0x27 running from 3V3, and the LVLSHIFT part is deleted outright (§4.3).
 
 > [!NOTE]
 > The generated sheets are **schematic-only**: no device carries a package, so they document connectivity and will not generate a board layout. The RC522 `IRQ` line is intentionally left unconnected — the reader is polled, not interrupt-driven.
@@ -223,8 +247,10 @@ stateDiagram-v2
     IDLE --> CARD_READ : ISO14443A ATQA/UID
     CARD_READ --> PIN_ENTRY : UID well-formed
     CARD_READ --> DENY : read error / tamper
-    PIN_ENTRY --> DENY : timeout (T_pin) or 3 failed attempts
+    PIN_ENTRY --> DENY : timeout (T_pin)
+    PIN_ENTRY --> LOCKOUT : attempt limit reached
     PIN_ENTRY --> AWAIT_DECISION : '#' submitted
+    LOCKOUT --> IDLE : cool-down elapsed
     AWAIT_DECISION --> GRANT : PERMIT
     AWAIT_DECISION --> DENY : DENY / INDETERMINATE
     AWAIT_DECISION --> DEGRADED : timeout (T_pdp)
@@ -239,8 +265,28 @@ Departures from the reference implementations [4] and [6]:
 
 1. **The card UID and the PIN are no longer authorisation.** In [4] a UID match against a compile-time constant *is* the grant; [6] goes further and toggles the latch open or closed on any card it recognises, so a replayed UID both opens and closes the door. Here both factors are merely *evidence*: they are marshalled into an access request and the grant is issued only by the PDP. The firmware contains no employee credentials, and the latch is edge-driven from the decision, never toggled by the card.
 2. **PINs are never transmitted or logged in clear.** The keypad buffer is salted with a per-transaction nonce and hashed; only the digest leaves the node, and the plaintext buffer is zeroised on every state exit.
-3. **The display masks input.** Retained from [4]: entered digits render as `*` on the 1602. The masking happens *before* the text crosses the I²C bus — see §5.3.
+3. **The display masks input.** Retained from [4]: entered digits render as `*` on the 2004A. Only masked text is ever written to the backpack, so the PIN never appears on the I²C bus.
 4. **Every transition emits an audit record**, including denials, timeouts and tamper events — a denial that is never recorded is indistinguishable from an attack that was never attempted.
+
+The node is implemented in `firmware/gateway-esp32/`, and it is **addressable**: it serves an operator page and a JSON API on port 80, which is how the web application reaches it.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/status` | State, door position, the transaction in flight, counters |
+| GET | `/api/events?since=` | The audit ring, newest first |
+| POST | `/api/decision` | Answer the transaction the node is blocked on |
+| POST | `/api/unlock`, `/api/lock` | Operator override, recorded as such |
+| GET/POST | `/api/acl` | Maintain the cached authorisation set |
+| POST | `/api/enrol` | Read the next card presented, and authorise nothing by it |
+| GET/POST | `/api/config` | Read settings / set one |
+
+Two properties hold the design together, and both are enforced in `access.cpp` rather than documented and hoped for:
+
+- **A decision is bound to a transaction.** `POST /api/decision` names a `txn`, and anything that does not name the one currently in flight is refused with `409`. Without that binding the endpoint is an unlock button that happens to take an argument, and a captured permit replays into the next person's transaction.
+- **The path a decision arrived by does not change how it is treated.** The PDP's reply and an operator's click land in the same inbox, take the same HMAC check against `decisionKey`, and produce the same audit record — one that records whether the decision was signed.
+
+> [!IMPORTANT]
+> Every mutating route requires an API token, minted on first boot and printed once on the serial console. Clearing it puts the node in bench mode, where `/api/unlock` answers anyone who can reach port 80. Full protocol in [`firmware/gateway-esp32/README.md`](firmware/gateway-esp32/README.md).
 
 ### 5.2 Movement Recorder (ESP32-CAM)
 
@@ -252,25 +298,51 @@ Built on `ESP32-CAM_MJPEG2SD` [3], which supplies the frame pipeline, AVI muxing
 - **Uplink.** Access requests and decisions traverse MQTT; clips traverse HTTPS or FTP to the retention store, using the transports already implemented in [3].
 
 > [!NOTE]
-> **Prerequisites.** Arduino IDE ≥ 2.x or `arduino-cli`. For the enforcement node: ESP32 board support ≥ 2.0.x, board *DOIT ESP32 DEVKIT V1*; libraries `MFRC522`, `Keypad`, `Wire`, and `ESP32Servo` (the AVR `Servo` library used by [4] does not build for the ESP32 — `ESP32Servo` drives the SG90 through the LEDC peripheral instead). For the display co-processor: board *Arduino Uno*; libraries `LiquidCrystal` and `Wire`. Plus the upstream `ESP32-CAM_MJPEG2SD` sources [3].
+> **Prerequisites.** Arduino IDE ≥ 2.x or `arduino-cli`. For the enforcement node: ESP32 board support ≥ 2.0.x, board *DOIT ESP32 DEVKIT V1*; libraries `MFRC522` and `ESP32Servo` (the AVR `Servo` library used by [4] does not build for the ESP32 — `ESP32Servo` drives the SG90 through the LEDC peripheral instead). `Keypad` and `LiquidCrystal_I2C` are deliberately **not** used: both block for milliseconds at a time, and the enforcement loop has to stay bounded, so the matrix scan and the HD44780 timing live in `panel.cpp` where the waits can be spread across ticks. Plus the upstream `ESP32-CAM_MJPEG2SD` sources [3].
 
-1. **Wire and verify power** before connecting the RC522 — confirm 3.3 V at the module, and confirm the servo and camera are on the external rail. Check the four keypad-column pull-ups are fitted (§4.2); without them the matrix scan reads garbage rather than failing outright.
+1. **Wire and verify power** before connecting the RC522 — confirm 3.3 V at the module, and confirm the servo and camera are on the external rail. Check the four keypad-column pull-ups are fitted (§4.2); without them the matrix scan reads garbage rather than failing outright. Confirm that **no** wire runs from the external rail to the Arduino's `5V` pin (§4.1).
 2. **Flash the enforcement node.** Bring it up with the local PDP stub (`tools/pdp-stub`) so that the door logic can be exercised without the decision tier.
 3. **Flash and provision the recorder.** On first boot the ESP32-CAM raises its own access point at `192.168.4.1`, where WiFi credentials, resolution, frame rate and motion sensitivity are configured [3].
 4. **Verify the trigger path** — assert `REC_TRIG` and confirm a clip is written to SD with the expected pre-roll.
 5. **Point the recorder at the real PDP** and confirm signature verification, including a deliberate negative test with a bad signature.
 
-### 5.3 Display Co-processor (Arduino UNO R3)
+### 5.3 Operator Console
 
-A single-purpose I²C slave at address 0x08, deliberately the least interesting firmware in the repository. It owns the HD44780 timing and nothing else.
+One page, `console/index.html`, embedded into **both** firmwares by
+`console/build.py` and served at `/` by each of them. Point a browser at either
+node and the interface is the same; it probes the origin it was served from to
+work out which node answered, and the other node's address is entered once and
+kept in the browser. Neither node is a dependency of the other — with one
+unreachable, the console runs with that half greyed out.
 
-- **It renders, it does not decide.** The wire protocol is two 16-byte lines of pre-rendered ASCII plus a cursor position. There is no command that grants, denies, or moves the latch, so a compromised co-processor can lie to the operator but cannot open the door.
-- **It receives no secrets.** Digits are masked to `*` on the ESP32 before transmission (§5.1). The co-processor is incapable of leaking a PIN because it never holds one.
-- **It holds no state worth keeping.** On reset it clears the panel and waits. The ESP32 repaints on every state transition, so a co-processor that browns out and restarts recovers within one transition rather than needing resynchronisation.
-- **It must not block the bus.** The HD44780 needs a ~37 µs settle after most writes and ~1.5 ms after a clear. Those waits happen in the main loop against a buffer, never inside the `Wire` receive ISR — stretching the clock for 1.5 ms inside an interrupt handler would stall the enforcement node's bus mid-transaction.
+| Tab | Node | Contents |
+|---|---|---|
+| Door | Enforcement | State, the transaction awaiting a decision, override, audit ring, cached authorisation set, card enrolment |
+| Camera | Recorder | Live MJPEG with the motion mask overlaid, detections and their ground-truth labels, the three detector stages |
+| Timeline | Both | Credential events joined to motion events |
+| Setup | Both | Node addresses and token, enforcement settings, WiFi for either node |
 
 > [!NOTE]
-> This node exists because of a voltage threshold (§4.3), not because the ESP32 lacks the cycles. If the display is ever changed for a 3.3 V-native module — an I²C OLED, or a 1602 running its logic at 3V3 — the co-processor, the translator and this entire section should be deleted rather than kept for symmetry.
+> **Why one page rather than two.** §5.4 classifies a transit by what *both*
+> nodes saw, and neither node can perform that classification: the enforcement
+> node cannot see movement and the recorder cannot see a credential. Two
+> separate interfaces put the join in the operator's head. The Timeline tab does
+> it in the browser, which is the first place in the system where both halves of
+> the evidence are present at once.
+
+The join is on the epoch, and both nodes report one. When either clock is unset
+the tab says the correlation is unavailable rather than lining up two stopwatches
+started at different moments and presenting the result as evidence.
+
+The console is a normal static page — it is also openable straight off disk, or
+from any static host, and reaches the nodes over their JSON APIs. Both nodes send
+`Access-Control-Allow-Origin` for that reason; the enforcement node's API token,
+not the page's origin, is what gates the door.
+
+> [!IMPORTANT]
+> `console_ui.h` in each firmware directory is **generated**. Edit
+> `console/index.html` and re-run `python console/build.py`; a change made to
+> either header is lost the next time anyone does.
 
 ### 5.4 Movement Semantics
 
@@ -301,4 +373,6 @@ The system distinguishes three observable classes, only the first of which is a 
 
 [6] M. A. Haj Salah, *Smart door access control using ESP32 and RFID card*, Robotique Site. Source of the RC522, LCD and servo pin assignment used in §4.2. https://www.robotique.site/tutorial/smart-door-access-control-using-esp32-and-rfid-card
 
-[7] Robotique Site, *Smart door access control using Arduino and RFID card* — video walkthrough accompanying [6]. https://youtu.be/AbjD1DNPrNs
+[7] VDRAM, *Module LCD 20x4 I²C pour Arduino, rétroéclairage bleu* (WPI450) — 20×4 character LCD with PCF8574 backpack, 5 VDC, I²C address 0x20–0x27 (default 0x27). https://www.vdram.com/interfaces-compatibles-arduino/1934-module-lcd-20x4-ic-pour-arduino-retroeclairage-bleu-wpi450.html
+
+[8] Robotique Site, *Smart door access control using Arduino and RFID card* — video walkthrough accompanying [6]. https://youtu.be/AbjD1DNPrNs

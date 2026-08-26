@@ -31,7 +31,6 @@ done
 
 BREADBOARD="$DIR/smart-gateway-breadboard"
 SCHEMATIC="$DIR/smart-gateway-schematic"
-DISPLAY="$DIR/smart-gateway-display"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -114,8 +113,7 @@ if [ "$EXPORTED" -eq 0 ]; then
     echo "==> rasterising SVG at ${DPI} dpi"
     render "$BREADBOARD.svg" "$BREADBOARD.png"
     render "$SCHEMATIC.svg"  "$SCHEMATIC.png"
-    render "$DISPLAY.svg"    "$DISPLAY.png"
 fi
 
 echo "==> done"
-ls -l "$BREADBOARD.png" "$SCHEMATIC.png" "$DISPLAY.png" 2>/dev/null || true
+ls -l "$BREADBOARD.png" "$SCHEMATIC.png" 2>/dev/null || true

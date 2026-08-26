@@ -171,33 +171,30 @@
 <line x1="560" y1="592" x2="546" y2="592" stroke="#101317" stroke-width="2" stroke-linecap="round"/>
 <circle cx="546" cy="592" r="3.5" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="568" y="596" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">GND</text>
-<line x1="980" y1="270" x2="994" y2="270" stroke="#d63384" stroke-width="2" stroke-linecap="round"/>
-<circle cx="994" cy="270" r="3.5" fill="#d63384" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="274" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO4 REC_TRIG</text>
+<line x1="980" y1="270" x2="994" y2="270" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="994" cy="270" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<text x="972" y="274" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO25 LED_G</text>
 <line x1="980" y1="316" x2="994" y2="316" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="316" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="320" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO25 LED_G</text>
+<text x="972" y="320" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO33 LED_R</text>
 <line x1="980" y1="362" x2="994" y2="362" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="362" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="366" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO33 LED_R</text>
-<line x1="980" y1="408" x2="994" y2="408" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
-<circle cx="994" cy="408" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="412" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO32 BUZZER</text>
+<text x="972" y="366" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO32 BUZZER</text>
+<line x1="980" y1="408" x2="994" y2="408" stroke="#c9a227" stroke-width="2" stroke-linecap="round"/>
+<circle cx="994" cy="408" r="3.5" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
+<text x="972" y="412" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO13/14/27/26 ROWS</text>
 <line x1="980" y1="454" x2="994" y2="454" stroke="#c9a227" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="454" r="3.5" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="458" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO13/14/27/26 ROWS</text>
-<line x1="980" y1="500" x2="994" y2="500" stroke="#c9a227" stroke-width="2" stroke-linecap="round"/>
-<circle cx="994" cy="500" r="3.5" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="504" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO34/35/36/39 COLS</text>
-<line x1="980" y1="546" x2="994" y2="546" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
-<circle cx="994" cy="546" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="550" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO17 SERVO</text>
+<text x="972" y="458" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO34/35/36/39 COLS</text>
+<line x1="980" y1="500" x2="994" y2="500" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="994" cy="500" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<text x="972" y="504" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO17 SERVO</text>
+<line x1="980" y1="546" x2="994" y2="546" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
+<circle cx="994" cy="546" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
+<text x="972" y="550" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO21 SDA</text>
 <line x1="980" y1="592" x2="994" y2="592" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="592" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="596" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO21 SDA</text>
-<line x1="980" y1="638" x2="994" y2="638" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
-<circle cx="994" cy="638" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="642" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO22 SCL</text>
+<text x="972" y="596" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO22 SCL</text>
 <rect x="94" y="204" width="260" height="200" rx="6" fill="#00000010" stroke="none" stroke-width="1" opacity="1.0"/>
 <rect x="90" y="200" width="260" height="200" rx="6" fill="#ffffff" stroke="#1c6bb8" stroke-width="2" opacity="1.0"/>
 <rect x="90" y="200" width="260" height="30" rx="6" fill="#1c6bb8" stroke="none" stroke-width="1" opacity="1.0"/>
@@ -227,15 +224,15 @@
 <rect x="90" y="460" width="260" height="150" rx="6" fill="#ffffff" stroke="#1f6f3f" stroke-width="2" opacity="1.0"/>
 <rect x="90" y="460" width="260" height="30" rx="6" fill="#1f6f3f" stroke="none" stroke-width="1" opacity="1.0"/>
 <rect x="90" y="482" width="260" height="8" rx="0" fill="#1f6f3f" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="220.0" y="481" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">Display subsystem</text>
-<text x="220.0" y="508" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="middle">Arduino UNO R3 + LCD 1602A - sheet 2</text>
+<text x="220.0" y="481" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">LCD 2004A</text>
+<text x="220.0" y="508" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="middle">PCF8574 I2C backpack - 0x27</text>
 <line x1="350" y1="540" x2="364" y2="540" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
 <circle cx="364" cy="540" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="342" y="544" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">SDA</text>
 <line x1="350" y1="570" x2="364" y2="570" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
 <circle cx="364" cy="570" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="342" y="574" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">SCL</text>
-<text x="220" y="600" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="middle">5 V island - BSS138 on sheet 2</text>
+<text x="220" y="600" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="9.5" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="middle">run from 3V3 - pull-ups sit at 3.3 V</text>
 <rect x="94" y="684" width="260" height="190" rx="6" fill="#00000010" stroke="none" stroke-width="1" opacity="1.0"/>
 <rect x="90" y="680" width="260" height="190" rx="6" fill="#ffffff" stroke="#5b6472" stroke-width="2" opacity="1.0"/>
 <rect x="90" y="680" width="260" height="30" rx="6" fill="#5b6472" stroke="none" stroke-width="1" opacity="1.0"/>
@@ -279,15 +276,8 @@
 <rect x="1190" y="722" width="280" height="8" rx="0" fill="#2a2d33" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="1330.0" y="721" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#ffffff" text-anchor="middle">ESP32-CAM</text>
 <text x="1330.0" y="748" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="middle">MJPEG2SD movement recorder</text>
-<line x1="1190" y1="780" x2="1176" y2="780" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
-<circle cx="1176" cy="780" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="1198" y="784" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">G13 SDA</text>
-<line x1="1190" y1="820" x2="1176" y2="820" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
-<circle cx="1176" cy="820" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="1198" y="824" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">G12 SCL</text>
-<line x1="1190" y1="860" x2="1176" y2="860" stroke="#d63384" stroke-width="2" stroke-linecap="round"/>
-<circle cx="1176" cy="860" r="3.5" fill="#d63384" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="1198" y="864" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">G16 REC_TRIG</text>
+<text x="1330" y="800" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="middle">WiFi only - shares no net</text>
+<text x="1330" y="822" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="middle">with the enforcement node</text>
 <polyline points="364,240 420,240 420,270 546,270" fill="none" stroke="#7b4fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="240" r="1.9800000000000002" fill="#7b4fd0" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="546" cy="270" r="1.9800000000000002" fill="#7b4fd0" stroke="none" stroke-width="1" opacity="1.0"/>
@@ -306,41 +296,30 @@
 <polyline points="364,370 500,370 500,500 546,500" fill="none" stroke="#e8820c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="370" r="1.9800000000000002" fill="#e8820c" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="546" cy="500" r="1.9800000000000002" fill="#e8820c" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="364,540 390,540 390,950 1035,950 1035,592 994,592" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="364,540 390,540 390,950 1035,950 1035,546 994,546" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="540" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="592" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="364,570 402,570 402,968 1050,968 1050,638 994,638" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="994" cy="546" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="364,570 402,570 402,968 1050,968 1050,592 994,592" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="570" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="638" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="364,740 444,740 444,838 1010,838 1010,362 994,362" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="994" cy="592" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="364,740 444,740 444,838 1010,838 1010,316 994,316" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="740" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="362" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="364,780 437,780 437,856 1000,856 1000,316 994,316" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="364" cy="780" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="994" cy="316" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="364,820 430,820 430,874 990,874 990,408 994,408" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="364,780 437,780 437,856 1000,856 1000,270 994,270" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="364" cy="780" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<circle cx="994" cy="270" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="364,820 430,820 430,874 990,874 990,362 994,362" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="364" cy="820" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="408" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,300 1120,300 1120,454 994,454" fill="none" stroke="#c9a227" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="994" cy="362" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="1176,300 1120,300 1120,408 994,408" fill="none" stroke="#c9a227" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="1176" cy="300" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="454" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,346 1105,346 1105,500 994,500" fill="none" stroke="#c9a227" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="994" cy="408" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="1176,346 1105,346 1105,454 994,454" fill="none" stroke="#c9a227" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="1176" cy="346" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="500" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,570 1090,570 1090,546 994,546" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="994" cy="454" r="2.3400000000000003" fill="#c9a227" stroke="none" stroke-width="1" opacity="1.0"/>
+<polyline points="1176,570 1090,570 1090,500 994,500" fill="none" stroke="#2f6fd0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="1176" cy="570" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="546" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,780 1022,780 1022,950" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="1176" cy="780" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="1022" cy="950" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="1022" cy="950" r="4" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,820 1034,820 1034,968" fill="none" stroke="#0f9b8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="1176" cy="820" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="1034" cy="968" r="1.9800000000000002" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="1034" cy="968" r="4" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1176,860 1170,860 1170,690 1015,690 1015,270 994,270" fill="none" stroke="#d63384" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="1176" cy="860" r="1.9800000000000002" fill="#d63384" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="994" cy="270" r="1.9800000000000002" fill="#d63384" stroke="none" stroke-width="1" opacity="1.0"/>
+<circle cx="994" cy="500" r="1.9800000000000002" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
 <line x1="60" y1="130" x2="1500" y2="130" stroke="#e02b20" stroke-width="3" stroke-linecap="round"/>
 <text x="66" y="122" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11" font-weight="bold" font-style="normal" fill="#e02b20" text-anchor="start">+5 V</text>
 <line x1="60" y1="1140" x2="1500" y2="1140" stroke="#101317" stroke-width="3" stroke-linecap="round"/>
@@ -353,7 +332,7 @@
 <circle cx="505" cy="1140" r="1.9800000000000002" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="520" cy="130" r="4" fill="#e02b20" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="505" cy="1140" r="4" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
-<rect x="90" y="900" width="270" height="218" rx="6" fill="#ffffff" stroke="#d7dbe2" stroke-width="1.5" opacity="1.0"/>
+<rect x="90" y="900" width="270" height="196" rx="6" fill="#ffffff" stroke="#d7dbe2" stroke-width="1.5" opacity="1.0"/>
 <text x="104" y="924" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="12.5" font-weight="bold" font-style="normal" fill="#1b1f27" text-anchor="start">Wire colour key</text>
 <line x1="104" y1="946" x2="130" y2="946" stroke="#e02b20" stroke-width="4" stroke-linecap="round"/>
 <text x="138" y="950" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">+5 V (external rail)</text>
@@ -364,12 +343,10 @@
 <line x1="104" y1="1012" x2="130" y2="1012" stroke="#7b4fd0" stroke-width="4" stroke-linecap="round"/>
 <text x="138" y="1016" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">SPI - RC522</text>
 <line x1="104" y1="1034" x2="130" y2="1034" stroke="#0f9b8e" stroke-width="4" stroke-linecap="round"/>
-<text x="138" y="1038" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">I2C - LCD and ESP32-CAM</text>
+<text x="138" y="1038" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">I2C - LCD backpack</text>
 <line x1="104" y1="1056" x2="130" y2="1056" stroke="#c9a227" stroke-width="4" stroke-linecap="round"/>
 <text x="138" y="1060" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">Keypad matrix</text>
 <line x1="104" y1="1078" x2="130" y2="1078" stroke="#2f6fd0" stroke-width="4" stroke-linecap="round"/>
 <text x="138" y="1082" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">Discrete signals</text>
-<line x1="104" y1="1100" x2="130" y2="1100" stroke="#d63384" stroke-width="4" stroke-linecap="round"/>
-<text x="138" y="1104" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="11.5" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="start">REC_TRIG to recorder</text>
 <text x="28" y="1182" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10.5" font-weight="normal" font-style="italic" fill="#5b6472" text-anchor="start">Generated by schematic/svggen.py - do not edit by hand. Pin assignment authoritative in README.md section 4.2.</text>
 </svg>

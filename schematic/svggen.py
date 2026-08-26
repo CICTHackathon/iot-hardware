@@ -146,10 +146,9 @@ WIRE_KEY = [
     (C["w_gnd"],  "GND / common return"),
     (C["w_33"],   "+3.3 V (logic rail)"),
     (C["w_spi"],  "SPI - RC522"),
-    (C["w_i2c"],  "I2C - LCD and ESP32-CAM"),
+    (C["w_i2c"],  "I2C - LCD backpack"),
     (C["w_kp"],   "Keypad matrix"),
     (C["w_sig"],  "Discrete signals"),
-    (C["w_trig"], "REC_TRIG to recorder"),
 ]
 
 
@@ -179,26 +178,23 @@ ESP_BOT = ["EN", "G36", "G39", "G34", "G35", "G32", "G33", "G25",
 # Horizontal routing corridors, top to bottom. Every jumper runs along one of
 # these; keeping them declared in one place is what stops two wires sharing a
 # line and reading as a junction.
-Y_LCD_VCC, Y_LCD_GND = 242, 250   # display subsystem supply
+Y_LCD_GND = 252                   # backpack ground out to the rail
+Y_REF_33 = 330                    # translator low-side reference
 Y_BUS_SDA, Y_BUS_SCL = 338, 348        # translator low side -> ESP32
-Y_TRIG = 358                           # recorder trigger -> G4
-Y_TAP_SDA, Y_TAP_SCL = 368, 378        # recorder taps onto the I2C pair
 Y_SERVO_SIG = 388
 Y_SPI = (396, 400, 404, 408, 412, 416, 420)
 Y_ANN = (728, 734, 740)                # buzzer, grant LED, deny LED
 Y_KEYPAD = (748, 752, 756, 760, 764, 768, 772, 776)
-Y_CAM_STUB = (788, 784, 780)           # G13, G12, G16 - clear of the keypad
 Y_VIN, Y_GND = 1010, 1016              # ESP32 supply, under the breadboard
 Y_SERVO_PWR = (1022, 1030)
-Y_CAM_PWR = (1038, 1046)
 
 
 def breadboard_view(path):
-    W, H = 1560, 1210
+    W, H = 1560, 1260
     svg_open(W, H, "Smart Gateway - breadboard view")
     frame(W, H, "Smart Gateway - Breadboard View",
-          "ESP32 DevKit V1 (30-pin) enforcement node with RC522, 4x4 keypad, "
-          "SG90 servo, display subsystem and ESP32-CAM recorder")
+          "ESP32 DevKit V1 (30-pin) enforcement node with RC522, 2004A I2C "
+          "LCD, 4x4 keypad and SG90 servo; recorder shown for context")
 
     # ---- ESP32 DevKit V1, antenna left / micro-USB right ----
     ux, uy, uw, uh = 470, 450, 470, 250
@@ -234,24 +230,20 @@ def breadboard_view(path):
         text(px, py + 22, name.replace("GND2", "GND"), 9, C["muted"],
              anchor="middle")
 
-    # ---- display subsystem (top centre) - detailed on sheet 2 ----
-    lx, ly, lw, lh = 380, 92, 380, 130
+    # ---- LCD 2004A with PCF8574 I2C backpack (top centre) ----
+    lx, ly, lw, lh = 400, 92, 400, 140
     panel(lx, ly, lw, lh, C["lcd"], "#14532a", rx=6)
-    rect(lx + 24, ly + 20, 200, 62, C["lcd_scr"], "#6f9a24", rx=3, sw=1.5)
-    text(lx + 38, ly + 44, "PRESENT BADGE", 11.5, "#2c3a12",
-         family="Courier New, monospace")
-    text(lx + 38, ly + 64, "GW-LAB-01", 11.5, "#2c3a12",
-         family="Courier New, monospace")
-    rect(lx + 244, ly + 20, 112, 62, "#0f3d22", "#0a2a17", rx=4, sw=1.5)
-    text(lx + 300, ly + 44, "Arduino", 11, "#cfe8d6", anchor="middle",
-         weight="bold")
-    text(lx + 300, ly + 62, "UNO R3", 11, "#cfe8d6", anchor="middle")
-    text(lx + lw / 2, ly - 12,
-         "Display subsystem  -  5 V island, see sheet 2", 12.5, C["ink"],
-         anchor="middle", weight="bold")
+    rect(lx + 26, ly + 18, 348, 92, "#1d3f8a", "#132a5c", rx=3, sw=1.5)
+    for i, row in enumerate(("PRESENT BADGE", "GW-LAB-01", "", "READY")):
+        text(lx + 40, ly + 40 + i * 21, row, 11, "#dbe6ff",
+             family="Courier New, monospace")
+    rect(lx + lw - 104, ly + lh - 26, 96, 22, "#0f3d22", rx=3)
+    text(lx + lw - 56, ly + lh - 11, "PCF8574", 9, "#cfe8d6", anchor="middle")
+    text(lx + lw / 2, ly - 12, "LCD 2004A + I2C backpack (0x27, 3.3 V)",
+         12.5, C["ink"], anchor="middle", weight="bold")
     lcd = {}
-    for i, name in enumerate(["SDA", "SCL", "5V", "GND"]):
-        px = 470 + i * 50
+    for i, name in enumerate(["GND", "VCC", "SDA", "SCL"]):
+        px = 480 + i * 50
         lcd[name] = (px, ly + lh)
         circle(px, ly + lh, 4.5, "#c9ccd1", "#7d8189", 1)
         text(px, ly + lh - 8, name, 9, "#cfe8d6", anchor="middle")
@@ -322,6 +314,8 @@ def breadboard_view(path):
     ex, ey, ew, eh = 1020, 790, 220, 210
     text(ex + ew / 2, ey - 34, "Movement recorder node", 12.5, C["ink"],
          anchor="middle", weight="bold")
+    text(ex + ew / 2, ey - 16, "independent - no wire to the ESP32", 10,
+         C["muted"], anchor="middle", style="italic")
     panel(ex, ey, ew, eh, C["cam"], "#15181c", rx=8)
     rect(ex + 20, ey + 40, 84, 84, "#3a3f47", rx=6)
     circle(ex + 62, ey + 82, 28, "#0d0f12", "#5a6069", 3)
@@ -335,12 +329,9 @@ def breadboard_view(path):
          anchor="middle")
     text(ex + ew / 2, ey + 192, "AI-Thinker / OV2640", 9.5, "#7f868f",
          anchor="middle")
-    cam = {}
-    for i, name in enumerate(["G13", "G12", "G16", "5V", "GND"]):
-        px = ex + 22 + i * 44
-        cam[name] = (px, ey)
-        circle(px, ey, 4.5, "#c9ccd1", "#7d8189", 1)
-        text(px, ey - 12, name, 8.5, C["muted"], anchor="middle")
+    rect(ex + ew / 2 - 26, ey + eh - 10, 52, 14, "#9aa1ab", rx=7)
+    text(ex + ew / 2, ey + eh - 26, "USB-C  -  own supply", 9.5, "#a9b0ba",
+         anchor="middle", style="italic")
 
     # ---- breadboard (bottom left) ----
     bx, by, bw, bh = 60, 800, 620, 200
@@ -390,16 +381,15 @@ def breadboard_view(path):
         wire([rcp[name], (riser, rcp[name][1]), (riser, corridor),
               (top[dest][0], corridor), top[dest]], col)
 
-    # display subsystem -> ESP32 I2C pins. The subsystem presents 3.3 V here:
-    # its BSS138 sits on the far side of these two wires, on sheet 2.
-    sda_x, scl_x = top["G21"][0], top["G22"][0]
-    wire([lcd["SDA"], (lcd["SDA"][0], Y_BUS_SDA), (sda_x, Y_BUS_SDA),
+    # The backpack runs from 3V3, so its pull-ups sit at 3.3 V and SDA/SCL
+    # go straight to the ESP32 - no level translation anywhere on this bus.
+    wire([lcd["SDA"], (lcd["SDA"][0], Y_BUS_SDA), (top["G21"][0], Y_BUS_SDA),
           top["G21"]], C["w_i2c"])
-    wire([lcd["SCL"], (lcd["SCL"][0], Y_BUS_SCL), (scl_x, Y_BUS_SCL),
+    wire([lcd["SCL"], (lcd["SCL"][0], Y_BUS_SCL), (top["G22"][0], Y_BUS_SCL),
           top["G22"]], C["w_i2c"])
-    # the subsystem is a 5 V island, fed from the rail and not from the ESP32
-    wire([lcd["5V"], (lcd["5V"][0], Y_LCD_VCC), (280, Y_LCD_VCC),
-          (280, rail_rt)], C["w_5v"])
+    wire([lcd["VCC"], (lcd["VCC"][0], Y_REF_33), (top["3V3"][0], Y_REF_33),
+          (top["3V3"][0], Y_SPI[0])], C["w_33"])
+    junction(top["3V3"][0], Y_SPI[0], C["w_33"])
     wire([lcd["GND"], (lcd["GND"][0], Y_LCD_GND), (290, Y_LCD_GND),
           (290, rail_bt)], C["w_gnd"])
 
@@ -433,36 +423,27 @@ def breadboard_view(path):
     wire([svp["GND"], (1262, svp["GND"][1]), (1262, Y_SERVO_PWR[1]),
           (576, Y_SERVO_PWR[1]), (576, rail_bb)], C["w_gnd"])
 
-    # ESP32-CAM: both nodes are 3.3 V, so the recorder taps the bus directly.
-    # The risers sit left of the keypad risers, so they cross no keypad wire.
-    wire([cam["G13"], (cam["G13"][0], Y_CAM_STUB[0]), (946, Y_CAM_STUB[0]),
-          (946, Y_TAP_SDA), (sda_x, Y_TAP_SDA)], C["w_i2c"])
-    junction(sda_x, Y_TAP_SDA, C["w_i2c"])
-    wire([cam["G12"], (cam["G12"][0], Y_CAM_STUB[1]), (952, Y_CAM_STUB[1]),
-          (952, Y_TAP_SCL), (scl_x, Y_TAP_SCL)], C["w_i2c"])
-    junction(scl_x, Y_TAP_SCL, C["w_i2c"])
-    wire([cam["G16"], (cam["G16"][0], Y_CAM_STUB[2]), (958, Y_CAM_STUB[2]),
-          (958, Y_TRIG), (top["G4"][0], Y_TRIG), top["G4"]], C["w_trig"])
-    wire([cam["5V"], (cam["5V"][0], 780), (1244, 780), (1244, Y_CAM_PWR[0]),
-          (652, Y_CAM_PWR[0]), (652, rail_rb)], C["w_5v"])
-    wire([cam["GND"], (cam["GND"][0], 784), (1250, 784), (1250, Y_CAM_PWR[1]),
-          (628, Y_CAM_PWR[1]), (628, rail_bb)], C["w_gnd"])
-
     # ESP32 board supply
     wire([bot["VIN"], (bot["VIN"][0], Y_VIN), (560, Y_VIN), (560, rail_rb)],
          C["w_5v"])
     wire([bot["GND2"], (bot["GND2"][0], Y_GND), (536, Y_GND), (536, rail_bb)],
          C["w_gnd"])
 
-    # external supply
-    psx, psy = 700, 1080
-    panel(psx, psy, 200, 62, "#ffffff", "#d7dbe2", rx=6, sw=1.5)
-    text(psx + 100, psy + 26, "External 5 V / 2 A", 12, C["ink"],
+    # external supply: an Arduino UNO used purely as a 5 V source
+    psx, psy = 700, 1058
+    panel(psx, psy, 300, 122, "#0f6f78", "#08464c", rx=8, sw=2)
+    rect(psx + 14, psy + 40, 34, 40, "#9aa1ab", rx=3)
+    rect(psx + 116, psy + 34, 104, 36, "#23262b", rx=4)
+    text(psx + 150, psy + 100, "Arduino UNO R3", 13, "#ffffff",
          anchor="middle", weight="bold")
-    text(psx + 100, psy + 46, "grounds commoned to the ESP32", 10, C["muted"],
-         anchor="middle")
-    wire([(psx, psy + 20), (664, psy + 20), (664, rail_rb)], C["w_5v"])
-    wire([(psx, psy + 44), (500, psy + 44), (500, rail_bb)], C["w_gnd"])
+    text(psx + 150, psy + 142, "5 V supply only - no signal connection", 12,
+         C["ink"], anchor="middle", weight="bold")
+    for nm, py_, col in (("5V", psy + 32, C["w_5v"]),
+                         ("GND", psy + 62, C["w_gnd"])):
+        circle(psx, py_, 4.5, col, "#7d8189", 1)
+        text(psx + 12, py_ + 4, nm, 9, "#bfe3e6")
+    wire([(psx, psy + 32), (664, psy + 32), (664, rail_rb)], C["w_5v"])
+    wire([(psx, psy + 62), (600, psy + 62), (600, rail_bb)], C["w_gnd"])
 
     legend(1280, 620, WIRE_KEY, cols=1)
     text(28, H - 18,
@@ -514,7 +495,7 @@ def schematic_view(path):
               ("GND", C["w_gnd"])]
     for i, (n, c) in enumerate(lnames):
         left[n.split()[0]] = pin(mx, my + 90 + i * 46, n, "left", c)
-    rnames = [("GPIO4 REC_TRIG", C["w_trig"]), ("GPIO25 LED_G", C["w_sig"]),
+    rnames = [("GPIO25 LED_G", C["w_sig"]),
               ("GPIO33 LED_R", C["w_sig"]), ("GPIO32 BUZZER", C["w_sig"]),
               ("GPIO13/14/27/26 ROWS", C["w_kp"]),
               ("GPIO34/35/36/39 COLS", C["w_kp"]),
@@ -533,12 +514,12 @@ def schematic_view(path):
     text(220, 388, "3.3 V logic - native match to the ESP32", 10, "#1f7a4d",
          anchor="middle", weight="bold")
 
-    block(90, 460, 260, 150, "Display subsystem",
-          "Arduino UNO R3 + LCD 1602A - sheet 2", C["lcd"])
+    block(90, 460, 260, 150, "LCD 2004A",
+          "PCF8574 I2C backpack - 0x27", C["lcd"])
     lc = {}
     for i, n in enumerate(("SDA", "SCL")):
         lc[n] = pin(350, 540 + i * 30, n, "right", C["w_i2c"])
-    text(220, 600, "5 V island - BSS138 on sheet 2", 9.5, C["muted"],
+    text(220, 600, "run from 3V3 - pull-ups sit at 3.3 V", 9.5, C["muted"],
          anchor="middle", style="italic")
 
     block(90, 680, 260, 190, "Annunciators", "grant / deny / alarm",
@@ -562,11 +543,10 @@ def schematic_view(path):
 
     block(1190, 700, 280, 210, "ESP32-CAM", "MJPEG2SD movement recorder",
           C["cam"])
-    cm = {}
-    for i, (n, c) in enumerate((("G13 SDA", C["w_i2c"]),
-                                ("G12 SCL", C["w_i2c"]),
-                                ("G16 REC_TRIG", C["w_trig"]))):
-        cm[n.split()[0]] = pin(1190, 780 + i * 40, n, "left", c)
+    text(1330, 800, "WiFi only - shares no net", 10, C["muted"],
+         anchor="middle", style="italic")
+    text(1330, 822, "with the enforcement node", 10, C["muted"],
+         anchor="middle", style="italic")
 
     # ---- nets ----
     for a, b, c in ((rc["SCK"], left["GPIO18"], C["w_spi"]),
@@ -579,7 +559,7 @@ def schematic_view(path):
     wire([rc["3V3"], (500, rc["3V3"][1]), (500, left["3V3"][1]),
           left["3V3"]], C["w_33"], 2.2)
 
-    # the display subsystem presents 3.3 V here - its translator is on sheet 2
+    # backpack at 3V3 - the bus is 3.3 V end to end, no translation
     wire([lc["SDA"], (390, lc["SDA"][1]), (390, 950), (1035, 950),
           (1035, right["GPIO21"][1]), right["GPIO21"]], C["w_i2c"], 2.2)
     wire([lc["SCL"], (402, lc["SCL"][1]), (402, 968), (1050, 968),
@@ -603,14 +583,6 @@ def schematic_view(path):
     wire([sv, (1090, sv[1]), (1090, right["GPIO17"][1]), right["GPIO17"]],
          C["w_sig"], 2.2)
 
-    # the recorder sits on the same 3.3 V bus - no translation on this branch
-    wire([cm["G13"], (1022, cm["G13"][1]), (1022, 950)], C["w_i2c"], 2.2)
-    junction(1022, 950, C["w_i2c"])
-    wire([cm["G12"], (1034, cm["G12"][1]), (1034, 968)], C["w_i2c"], 2.2)
-    junction(1034, 968, C["w_i2c"])
-    wire([cm["G16"], (1170, cm["G16"][1]), (1170, 690), (1015, 690),
-          (1015, right["GPIO4"][1]), right["GPIO4"]], C["w_trig"], 2.2)
-
     # power rails
     line(60, 130, W - 60, 130, C["w_5v"], 3)
     text(66, 122, "+5 V", 11, C["w_5v"], weight="bold")
@@ -629,182 +601,8 @@ def schematic_view(path):
     svg_close(path)
 
 
-# Display subsystem sheet: the bare 1602A and the Arduino that drives it.
-#
-# This is a 5 V island. It presents exactly four wires to the main sheet -
-# SDA, SCL, 5 V, GND - and the BSS138 sits on this side of them, so nothing
-# above 3.3 V ever reaches the ESP32.
-def display_view(path):
-    W, H = 1180, 880
-    svg_open(W, H, "Smart Gateway - display subsystem")
-    frame(W, H, "Smart Gateway - Display Subsystem (sheet 2)",
-          "LCD 1602A + Arduino UNO R3")
-
-    # ---- LCD 1602A, bare 16-way header ----
-    lx, ly, lw, lh = 140, 80, 440, 130
-    panel(lx, ly, lw, lh, C["lcd"], "#14532a", rx=6)
-    rect(lx + 34, ly + 30, 372, 74, C["lcd_scr"], "#6f9a24", rx=3, sw=1.5)
-    text(lx + 52, ly + 60, "PRESENT BADGE", 13, "#2c3a12",
-         family="Courier New, monospace")
-    text(lx + 52, ly + 86, "GW-LAB-01", 13, "#2c3a12",
-         family="Courier New, monospace")
-    text(lx + lw / 2, ly - 12, "LCD 1602A", 12.5, C["ink"], anchor="middle",
-         weight="bold")
-    lcd_names = ["GND", "VCC", "Vo", "RS", "RW", "E", "D0", "D1", "D2", "D3",
-                 "D4", "D5", "D6", "D7", "A", "K"]
-    lcd = {}
-    for i, name in enumerate(lcd_names):
-        px = 176 + i * 26
-        lcd[name] = (px, ly + lh)
-        circle(px, ly + lh, 4.5, "#c9ccd1", "#7d8189", 1)
-        text(px, ly + lh - 8, name, 8, "#cfe8d6", anchor="middle")
-    # ---- contrast trimmer, directly under Vo ----
-    px_, py_, pw_, ph_ = 176, 250, 76, 46
-    panel(px_, py_, pw_, ph_, "#3b3f46", "#23262b", rx=4, sw=1.5)
-    circle(px_ + 38, py_ + 24, 14, "#c9a227", "#8a6f1a", 2)
-    line(px_ + 38, py_ + 24, px_ + 48, py_ + 16, "#4a4033", 3)
-    text(px_ + pw_ / 2, py_ + ph_ + 16, "10k", 9, C["muted"],
-         anchor="middle")
-    pot_w = (228, py_)                       # wiper, top edge, under Vo
-    pot_5v = (px_, py_ + 12)
-    pot_gnd = (px_, py_ + 34)
-    for pt in (pot_w, pot_5v, pot_gnd):
-        circle(pt[0], pt[1], 4, "#c9ccd1", "#7d8189", 1)
-
-    # ---- Arduino UNO R3 ----
-    ax, ay, aw, ah = 140, 420, 440, 200
-    ay2 = ay + ah
-    panel(ax, ay, aw, ah, "#0f6f78", "#08464c", rx=10, sw=2)
-    rect(ax + 20, ay + 66, 40, 46, "#9aa1ab", rx=3)
-    rect(ax + 150, ay + 74, 130, 44, "#23262b", rx=4)
-    text(ax + aw / 2, ay + 165, "Arduino UNO R3", 16, "#ffffff",
-         anchor="middle", weight="bold")
-
-    dig_names = ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9",
-                 "D10", "D11", "D12", "D13", "GND", "AREF", "SDA", "SCL"]
-    dig = {}
-    for i, name in enumerate(dig_names):
-        dig[name] = (172 + i * 22 + (12 if i >= 8 else 0), ay)
-    header(dig["D0"][0], ay, 8, 22)
-    header(dig["D8"][0], ay, 10, 22)
-    for name, (qx, qy) in dig.items():
-        text(qx, qy - 14, name, 7.5, C["muted"], anchor="middle")
-
-    pwr_names = ["3V3", "5V", "GND", "GND2", "VIN"]
-    ana_names = ["A0", "A1", "A2", "A3", "A4", "A5"]
-    ard = {}
-    for i, name in enumerate(pwr_names):
-        ard[name] = (172 + i * 22, ay2)
-    for i, name in enumerate(ana_names):
-        ard[name] = (340 + i * 22, ay2)
-    header(ard["3V3"][0], ay2, 5, 22)
-    header(ard["A0"][0], ay2, 6, 22)
-    for name in pwr_names + ana_names:
-        qx, qy = ard[name]
-        text(qx, qy + 22, name.replace("GND2", "GND"), 7.5, C["muted"],
-             anchor="middle")
-
-    # ---- BSS138 and the connector back to the main sheet ----
-    tx_, ty_, tw_, th_ = 680, 660, 190, 56
-    panel(tx_, ty_, tw_, th_, "#e8d9b0", "#b9a678", rx=5, sw=1.5)
-    text(tx_ + tw_ / 2, ty_ + 34, "BSS138", 11.5, "#4a4033",
-         anchor="middle", weight="bold")
-    bss_hv_sda, bss_hv_scl = (720, ty_), (760, ty_)
-    bss_lv_sda, bss_lv_scl = (tx_ + tw_, 676), (tx_ + tw_, 700)
-    bss_lv, bss_hv, bss_gnd = (tx_ + tw_, 668), (700, ty_ + th_), (760, ty_ + th_)
-
-    sx_, sy_, sw_, sh_ = 940, 380, 190, 180
-    panel(sx_, sy_, sw_, sh_, "#ffffff", "#d7dbe2", rx=6, sw=1.5)
-    text(sx_ + sw_ / 2, sy_ + 32, "ESP32 DevKit V1", 12, C["ink"],
-         anchor="middle", weight="bold")
-    stub = {}
-    for i, (name, col) in enumerate((("3V3", C["w_33"]), ("5V", C["w_5v"]),
-                                     ("GND", C["w_gnd"]), ("SDA", C["w_i2c"]),
-                                     ("SCL", C["w_i2c"]))):
-        qy = sy_ + 62 + i * 22
-        stub[name] = (sx_, qy)
-        circle(sx_, qy, 4, col, "#7d8189", 1)
-        text(sx_ + 12, qy + 4, name, 9.5, C["muted"])
-
-    # ---- supply rails ----
-    rail_5v, rail_gnd = 780, 806
-    line(60, rail_5v, W - 60, rail_5v, C["rail_r"], 2.5)
-    line(60, rail_gnd, W - 60, rail_gnd, C["rail_b"], 2.5)
-    # clear of the descending supply wires on the left
-    text(300, rail_5v - 8, "+5 V", 10, C["w_5v"], weight="bold")
-    text(300, rail_gnd + 18, "GND", 10, C["w_gnd"], weight="bold")
-    wire([stub["5V"], (912, stub["5V"][1]), (912, 744), (620, 744),
-          (620, rail_5v)], C["w_5v"])
-    wire([stub["GND"], (900, stub["GND"][1]), (900, 756), (600, 756),
-          (600, rail_gnd)], C["w_gnd"])
-
-    # =============================================================== wires ==
-    # LCD supply and R/W run out to the left, nested so none crosses another
-    for name, corridor, chan, col, rail in (("GND", 214, 60, C["w_gnd"], rail_gnd),
-                                            ("VCC", 222, 76, C["w_5v"], rail_5v),
-                                            ("RW", 238, 92, C["w_gnd"], rail_gnd)):
-        wire([lcd[name], (lcd[name][0], corridor), (chan, corridor),
-              (chan, rail)], col)
-
-    # contrast trimmer: Vo drops straight down, the ends go left to the rails
-    wire([lcd["Vo"], pot_w], C["w_sig"])
-    wire([pot_5v, (108, pot_5v[1]), (108, rail_5v)], C["w_5v"])
-    wire([pot_gnd, (124, pot_gnd[1]), (124, rail_gnd)], C["w_gnd"])
-
-    # backlight: anode through 220R to +5 V, cathode to ground
-    wire([lcd["A"], (lcd["A"][0], 214), (912, 214), (912, stub["5V"][1]),
-          stub["5V"]], C["w_5v"])
-    rect(904, 300, 16, 44, "#d8c9a3", "#9a8b66", rx=3, sw=1)
-    for i, bc in enumerate(("#8b1a1a", "#c02020", "#3b2b1a")):
-        rect(904, 308 + i * 9, 16, 5, bc)
-    text(926, 328, "220R", 8.5, C["muted"])
-    wire([lcd["K"], (lcd["K"][0], 222), (896, 222), (896, stub["GND"][1]),
-          stub["GND"]], C["w_gnd"])
-
-    # LCD -> Arduino, 4-bit parallel. Corridors are ordered so that no drop
-    # crosses another corridor: LiquidCrystal(8, 9, 10, 11, 12, 13).
-    for src, dst, corridor in (("E", "D9", 250), ("RS", "D8", 258),
-                               ("D4", "D10", 266), ("D5", "D11", 274),
-                               ("D6", "D12", 282), ("D7", "D13", 290)):
-        wire([lcd[src], (lcd[src][0], corridor), (dig[dst][0], corridor),
-              dig[dst]], C["w_spi"])
-
-    # Arduino supply
-    wire([ard["5V"], (ard["5V"][0], rail_5v)], C["w_5v"])
-    wire([ard["GND"], (ard["GND"][0], rail_gnd)], C["w_gnd"])
-
-    # Arduino I2C -> translator high side
-    wire([ard["A4"], (ard["A4"][0], 652), (bss_hv_sda[0], 652), bss_hv_sda],
-         C["w_i2c"])
-    wire([ard["A5"], (ard["A5"][0], 640), (bss_hv_scl[0], 640), bss_hv_scl],
-         C["w_i2c"])
-    # translator low side -> the connector, SDA outboard of SCL so they nest
-    wire([bss_lv_sda, (908, bss_lv_sda[1]), (908, stub["SDA"][1]),
-          stub["SDA"]], C["w_i2c"])
-    wire([bss_lv_scl, (926, bss_lv_scl[1]), (926, stub["SCL"][1]),
-          stub["SCL"]], C["w_i2c"])
-    # translator references: HV off the 5 V rail, LV off the ESP32's 3V3
-    wire([bss_hv, (bss_hv[0], rail_5v)], C["w_5v"])
-    wire([bss_gnd, (bss_gnd[0], rail_gnd)], C["w_gnd"])
-    wire([bss_lv, (936, bss_lv[1]), (936, stub["3V3"][1]), stub["3V3"]],
-         C["w_33"])
-
-    legend(620, 400, [(C["w_5v"], "+5 V island rail"),
-                     (C["w_gnd"], "GND / common return"),
-                     (C["w_33"], "+3.3 V reference from the ESP32"),
-                     (C["w_spi"], "LCD 4-bit parallel bus"),
-                     (C["w_i2c"], "I2C to the enforcement node"),
-                     (C["w_sig"], "contrast (analogue)")], cols=1)
-    text(28, H - 18,
-         "Generated by schematic/svggen.py - do not edit by hand. "
-         "Pin assignment authoritative in README.md section 4.2.",
-         10.5, C["muted"], style="italic")
-    svg_close(path)
-
-
 if __name__ == "__main__":
     print("Generating SVG sources...")
     breadboard_view(os.path.join(HERE, "smart-gateway-breadboard.svg"))
     schematic_view(os.path.join(HERE, "smart-gateway-schematic.svg"))
-    display_view(os.path.join(HERE, "smart-gateway-display.svg"))
     print("Done.")

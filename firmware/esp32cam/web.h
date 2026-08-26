@@ -1,5 +1,10 @@
-// HTTP surface of the node in the operator interface and JSON control API on port 80,
-// MJPEG stream on port 81, WebDAV export of the recording store on /dav.
+// HTTP surface of the node: the operator console and JSON control API on port
+// 80, MJPEG stream on port 81, WebDAV export of the recording store on /dav.
+//
+// The page served at `/` is the shared console from `console/index.html`, the
+// same document the enforcement node serves. Every JSON reply carries
+// `Access-Control-Allow-Origin` because the console is as likely to be running
+// from the other node as from this one.
 
 #pragma once
 

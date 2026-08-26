@@ -8,7 +8,7 @@
 #include "detect.h"
 #include "ml.h"
 #include "storage.h"
-#include "web_ui.h"
+#include "console_ui.h"
 
 // Boundary token carried over from the ESP32WebCam reference implementation.
 #define PART_BOUNDARY "123456789000000000000987654321"
@@ -78,7 +78,7 @@ void isoTime(time_t epoch, uint32_t uptimeMs, char* out, size_t len) {
 
 esp_err_t indexHandler(httpd_req_t* req) {
   httpd_resp_set_type(req, "text/html");
-  return httpd_resp_send(req, INDEX_HTML, HTTPD_RESP_USE_STRLEN);
+  return httpd_resp_send(req, CONSOLE_HTML, HTTPD_RESP_USE_STRLEN);
 }
 
 esp_err_t statusHandler(httpd_req_t* req) {
@@ -113,6 +113,8 @@ esp_err_t statusHandler(httpd_req_t* req) {
   n += snprintf(buf + n, 8, "\"}");
 
   httpd_resp_set_type(req, "application/json");
+  // Read by the console when it is being served by the other node.
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
   const esp_err_t r = httpd_resp_send(req, buf, n);
   free(buf);
   return r;
@@ -173,19 +175,23 @@ esp_err_t configPostHandler(httpd_req_t* req) {
 
 esp_err_t eventsHandler(httpd_req_t* req) {
   httpd_resp_set_type(req, "application/json");
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
   httpd_resp_sendstr_chunk(req, "[");
 
   const size_t n = eventsCount();
-  char item[420], when[32];
+  char item[480], when[32];
   for (size_t i = 0; i < n; ++i) {
     DetectionEvent e;
     if (!eventsGet(i, &e)) break;
     isoTime(e.epoch, e.uptimeMs, when, sizeof(when));
     snprintf(item, sizeof(item),
-             "%s{\"id\":%u,\"time\":\"%s\",\"verdict\":\"%s\",\"mlLabel\":\"%s\","
+             "%s{\"id\":%u,\"time\":\"%s\",\"epoch\":%lld,\"uptime\":%lu,"
+             "\"verdict\":\"%s\",\"mlLabel\":\"%s\","
              "\"s1\":%.3f,\"s2\":%.3f,\"x0\":%u,\"y0\":%u,\"x1\":%u,\"y1\":%u,"
              "\"frames\":%u,\"label\":%d,\"path\":\"%s\"}",
-             i ? "," : "", e.id, when, verdictName(e.verdict), e.mlLabel,
+             i ? "," : "", e.id, when, static_cast<long long>(e.epoch),
+             static_cast<unsigned long>(e.uptimeMs / 1000),
+             verdictName(e.verdict), e.mlLabel,
              e.stage1, e.stage2, e.x0, e.y0, e.x1, e.y1, e.frames, e.label, e.path);
     httpd_resp_sendstr_chunk(req, item);
   }
@@ -209,6 +215,7 @@ esp_err_t labelHandler(httpd_req_t* req) {
 esp_err_t datasetHandler(httpd_req_t* req) {
   httpd_resp_set_type(req, "text/csv");
   httpd_resp_set_hdr(req, "Content-Disposition", "attachment; filename=dataset.csv");
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
   char line[320];
   int n = snprintf(line, sizeof(line), "id,time,verdict,stage1,stage2,ml_label,label");
@@ -300,6 +307,7 @@ esp_err_t mlPreviewHandler(httpd_req_t* req) {
 
   httpd_resp_set_type(req, "image/bmp");
   httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
   const esp_err_t r = httpd_resp_send(req, reinterpret_cast<const char*>(bmp), fileBytes);
   free(bmp);
   return r;
