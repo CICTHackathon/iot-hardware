@@ -10,6 +10,13 @@
 #include "storage.h"
 #include "web.h"
 
+// esp32-camera renamed the decoder scale enumerators between Arduino-ESP32 2.x
+// and 3.x. Nothing about the decode changed, only the spelling, so the sketch
+// keeps building on either core rather than pinning one.
+#ifndef JPG_SCALE_8
+#define JPG_SCALE_8 JPG_SCALE_8X
+#endif
+
 // Stage 0 in movement detection by frame differencing
 
 namespace {

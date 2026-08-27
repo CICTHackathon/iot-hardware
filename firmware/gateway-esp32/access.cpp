@@ -774,7 +774,6 @@ void accessTick() {
     case ST_RELOCK:
       if (latchState() == DOOR_LOCKED) {
         audit(ST_RELOCK, EFF_NONE, RSN_NONE, "latch shot");
-        recRelease();
         enter(ST_IDLE);
       }
       break;

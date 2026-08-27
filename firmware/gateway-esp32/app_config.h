@@ -6,7 +6,7 @@
 
 // ESP32 DevKit V1 (ESP32-WROOM-32, 30-pin), README §4.2. Four of these pins are
 // not silkscreened with their GPIO number, so the silkscreen is in the comment:
-// wire against that, there is no hole marked D17, D36 or D39 to find.
+// wire against that, there is no hole marked D36 or D39 to find.
 #define PIN_RC522_SS     5      // D5  — VSPI slave select
 #define PIN_RC522_RST    2      // D2
 #define PIN_RC522_SCK   18      // D18
@@ -21,14 +21,14 @@
 #define I2C_HZ      100000UL    // 400 kHz works; 100 kHz is what the backpack is
                                 // comfortable with on breadboard capacitance
 
-#define PIN_SERVO       17      // TX2 — LEDC-driven 50 Hz PWM
+#define PIN_SERVO        4      // D4  — LEDC-driven 50 Hz PWM
 #define PIN_LED_GRANT   25      // D25
 #define PIN_LED_DENY    33      // D33
 #define PIN_BUZZER      32      // D32 — active high
 
-// D4 and RX2 (GPIO 4 and 16) are the node's only spares. D4 carried REC_TRIG to
-// the recorder before the two nodes were separated; nothing drives it now, and
-// this firmware deliberately does not claim it.
+// TX2 and RX2 (GPIO 17 and 16) are the node's only spares. D4 carried REC_TRIG
+// to the recorder before the two nodes were separated; with that gone the pin
+// was free, and the servo now sits on it so the second UART stays whole.
 
 // Keypad. Rows are driven low one at a time; the columns are input-only pins
 // with no internal pull-up, so each carries a discrete 10 kΩ to 3V3 (§4.2).

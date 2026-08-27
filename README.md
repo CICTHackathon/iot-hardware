@@ -118,24 +118,22 @@ The division of responsibility is deliberate and strict:
 
 ### 4.2 Pin Assignment (ESP32 DevKit V1)
 
-The RC522, LCD and servo assignments are taken verbatim from the Robotique Site ESP32 reference [6] and retained for interoperability with it. That reference carries no keypad and no annunciators; those are this project's own, placed on pins the reference leaves free.
-
-The **Silkscreen** column is what is actually printed on the board, and it is not always `Dnn`. Wire against that column, not against the GPIO number.
+The RC522 and LCD assignments are taken verbatim from the Robotique Site ESP32 reference [6] and retained for interoperability with it. The **Silkscreen** column is what is actually printed on the board, and it is not always `Dnn`. Wire against that column, not against the GPIO number.
 
 | Signal | ESP32 GPIO | Silkscreen | Source | Notes |
 |---|---|---|---|---|
 | RC522 `SDA/SS` | GPIO 5 | `D5` | [6] | VSPI slave select |
 | RC522 `RST` | GPIO 2 | `D2` | [6] | Module reset |
 | RC522 `SCK / MOSI / MISO` | GPIO 18 / 23 / 19 | `D18` / `D23` / `D19` | [6] | Hardware VSPI |
-| RC522 `3.3V`, `GND` | 3V3, GND | `3V3`, `GND` | [6] | Native 3.3 V — no translation |
+| RC522 `3.3V`, `GND` | 3V3, GND | `3V3`, `GND` | [6] | Native 3.3 V |
 | I²C `SDA` / `SCL` | GPIO 21 / GPIO 22 | `D21` / `D22` | [6] | Shared bus: LCD backpack + recorder |
-| Servo signal | GPIO 17 | **`TX2`** | [6] | LEDC-driven 50 Hz PWM |
+| Servo signal | GPIO 4 | `D4` | this project | LEDC-driven 50 Hz PWM |
 | Keypad rows R1–R4 | GPIO 13, 14, 27, 26 | `D13`, `D14`, `D27`, `D26` | this project | Driven low one row at a time |
 | Keypad columns C1–C4 | GPIO 34, 35, 36, 39 | `D34`, `D35`, **`VP`**, **`VN`** | this project | **Input-only** — external 10 kΩ pull-ups required |
 | Green LED (grant) | GPIO 25 | `D25` | this project | |
 | Red LED (deny) | GPIO 33 | `D33` | this project | |
 | Buzzer | GPIO 32 | `D32` | this project | Active-high |
-| — | GPIO 4, GPIO 16 | `D4`, `RX2` | — | Left free as spares |
+| — | GPIO 17, GPIO 16 | **`TX2`**, `RX2` | — | Left free as spares |
 
 ### 4.4 Schematic and Breadboard
 
@@ -321,7 +319,7 @@ The system distinguishes three observable classes, only the first of which is a 
 
 [5] F. D. Garcia *et al.*, "Dismantling MIFARE Classic," in *Proc. 13th European Symposium on Research in Computer Security (ESORICS)*, LNCS 5283, Springer, 2008, pp. 97–114.
 
-[6] M. A. Haj Salah, *Smart door access control using ESP32 and RFID card*, Robotique Site. Source of the RC522, LCD and servo pin assignment used in §4.2. https://www.robotique.site/tutorial/smart-door-access-control-using-esp32-and-rfid-card
+[6] M. A. Haj Salah, *Smart door access control using ESP32 and RFID card*, Robotique Site. Source of the RC522 and LCD pin assignment used in §4.2. https://www.robotique.site/tutorial/smart-door-access-control-using-esp32-and-rfid-card
 
 [7] VDRAM, *Module LCD 20x4 I²C pour Arduino, rétroéclairage bleu* (WPI450) — 20×4 character LCD with PCF8574 backpack, 5 VDC, I²C address 0x20–0x27 (default 0x27). https://www.vdram.com/interfaces-compatibles-arduino/1934-module-lcd-20x4-ic-pour-arduino-retroeclairage-bleu-wpi450.html
 

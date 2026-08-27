@@ -413,9 +413,9 @@ def breadboard_view(path):
         wire([(cx, cy + 70), (cx, rail_bb)], C["w_gnd"], 2.5)
     wire([(buzz[0], buzz[1] + 24), (buzz[0], rail_bb)], C["w_gnd"], 2.5)
 
-    # servo: signal to G17, power off the external rail
+    # servo: signal to G4, power off the external rail
     wire([svp["SIG"], (1252, svp["SIG"][1]), (1252, Y_SERVO_SIG),
-          (top["G17"][0], Y_SERVO_SIG), top["G17"]], C["w_sig"])
+          (top["G4"][0], Y_SERVO_SIG), top["G4"]], C["w_sig"])
     wire([svp["5V"], (1256, svp["5V"][1]), (1256, Y_SERVO_PWR[0]),
           (600, Y_SERVO_PWR[0]), (600, rail_rb)], C["w_5v"])
     wire([svp["GND"], (1262, svp["GND"][1]), (1262, Y_SERVO_PWR[1]),
@@ -497,7 +497,7 @@ def schematic_view(path):
               ("GPIO33 LED_R", C["w_sig"]), ("GPIO32 BUZZER", C["w_sig"]),
               ("GPIO13/14/27/26 ROWS", C["w_kp"]),
               ("GPIO34/35/36/39 COLS", C["w_kp"]),
-              ("GPIO17 SERVO", C["w_sig"]), ("GPIO21 SDA", C["w_i2c"]),
+              ("GPIO4 SERVO", C["w_sig"]), ("GPIO21 SDA", C["w_i2c"]),
               ("GPIO22 SCL", C["w_i2c"])]
     for i, (n, c) in enumerate(rnames):
         right[n.split()[0]] = pin(mx + mw, my + 90 + i * 46, n, "right", c)
@@ -578,7 +578,7 @@ def schematic_view(path):
     wire([kp["C1..C4"], (1105, kp["C1..C4"][1]),
           (1105, right["GPIO34/35/36/39"][1]), right["GPIO34/35/36/39"]],
          C["w_kp"], 2.6)
-    wire([sv, (1090, sv[1]), (1090, right["GPIO17"][1]), right["GPIO17"]],
+    wire([sv, (1090, sv[1]), (1090, right["GPIO4"][1]), right["GPIO4"]],
          C["w_sig"], 2.2)
 
     # power rails

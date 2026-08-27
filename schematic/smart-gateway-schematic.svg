@@ -188,7 +188,7 @@
 <text x="972" y="458" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO34/35/36/39 COLS</text>
 <line x1="980" y1="500" x2="994" y2="500" stroke="#2f6fd0" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="500" r="3.5" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<text x="972" y="504" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO17 SERVO</text>
+<text x="972" y="504" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO4 SERVO</text>
 <line x1="980" y1="546" x2="994" y2="546" stroke="#0f9b8e" stroke-width="2" stroke-linecap="round"/>
 <circle cx="994" cy="546" r="3.5" fill="#0f9b8e" stroke="none" stroke-width="1" opacity="1.0"/>
 <text x="972" y="550" font-family="Arial, Helvetica, DejaVu Sans, sans-serif" font-size="10" font-weight="normal" font-style="normal" fill="#5b6472" text-anchor="end">GPIO21 SDA</text>

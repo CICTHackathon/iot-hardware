@@ -724,9 +724,9 @@
 <polyline points="390,920 390,986" fill="none" stroke="#101317" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="390" cy="920" r="2.25" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="390" cy="986" r="2.25" fill="#101317" stroke="none" stroke-width="1" opacity="1.0"/>
-<polyline points="1270,496 1252,496 1252,388 732,388 732,450" fill="none" stroke="#2f6fd0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1270,496 1252,496 1252,388 788,388 788,450" fill="none" stroke="#2f6fd0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="1270" cy="496" r="2.7" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
-<circle cx="732" cy="450" r="2.7" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
+<circle cx="788" cy="450" r="2.7" fill="#2f6fd0" stroke="none" stroke-width="1" opacity="1.0"/>
 <polyline points="1270,526 1256,526 1256,1022 600,1022 600,974" fill="none" stroke="#e02b20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="1270" cy="526" r="2.7" fill="#e02b20" stroke="none" stroke-width="1" opacity="1.0"/>
 <circle cx="600" cy="974" r="2.7" fill="#e02b20" stroke="none" stroke-width="1" opacity="1.0"/>
