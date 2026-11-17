@@ -30,6 +30,7 @@ iot-hardware/
 ## System Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 60, "rankSpacing": 140, "padding": 20}}}%%
 flowchart LR
     subgraph Edge["Edge Tier (this repository)"]
         A["ESP32 DevKit V1<br/>PEP · credential capture · actuation"]
@@ -49,7 +50,20 @@ flowchart LR
     C -- "clips · events" --> L
     W <--> A
     W <--> C
-    P <--> D
+    P <---> D
+
+    classDef edge     fill:#1e5aa8,stroke:#9cc3f5,stroke-width:2px,color:#ffffff
+    classDef decision fill:#7a3fb0,stroke:#d4b3f2,stroke-width:2px,color:#ffffff
+    classDef store    fill:#b5651d,stroke:#f2c08a,stroke-width:2px,color:#ffffff
+    classDef operator fill:#1f7a5a,stroke:#9fe0c4,stroke-width:2px,color:#ffffff
+    class A,C edge
+    class P decision
+    class D,L store
+    class W operator
+
+    style Edge  fill:#1e5aa822,stroke:#5b8fd6,stroke-width:2px
+    style Cloud fill:#7a3fb022,stroke:#a77fd0,stroke-width:2px
+    linkStyle default stroke-width:2px
 ```
 
 | Concern | Tier | Rationale |
@@ -123,24 +137,41 @@ sh schematic/schematic.sh   # regenerate after any pin change
 A deterministic finite-state machine with no dynamic allocation and no blocking network I/O, so the time from card presentation to actuation has a fixed upper bound.
 
 ```mermaid
-stateDiagram-v2
-    [*] --> IDLE
-    IDLE --> CARD_READ : ISO14443A UID
-    CARD_READ --> PIN_ENTRY : UID valid
-    CARD_READ --> DENY : read error / tamper
-    PIN_ENTRY --> DENY : timeout
-    PIN_ENTRY --> LOCKOUT : attempt limit
-    PIN_ENTRY --> AWAIT_DECISION : '#' submitted
-    LOCKOUT --> IDLE : cool-down
-    AWAIT_DECISION --> GRANT : PERMIT
-    AWAIT_DECISION --> DENY : DENY / INDETERMINATE
-    AWAIT_DECISION --> DEGRADED : PDP timeout
-    DEGRADED --> GRANT : cache hit
-    DEGRADED --> DENY : cache miss (fail-secure)
-    GRANT --> RELOCK : open time elapsed
-    DENY --> IDLE
-    RELOCK --> IDLE
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 35, "rankSpacing": 70}}}%%
+flowchart LR
+    S(("start")) --> IDLE["IDLE"]
+    IDLE -->|"ISO14443A UID"| CR["CARD_READ"]
+    CR -->|"UID valid"| PE["PIN_ENTRY"]
+    CR -->|"read error / tamper"| DENY["DENY"]
+    PE -->|"'#' submitted"| AD["AWAIT_DECISION"]
+    PE -->|"timeout"| DENY
+    PE -->|"attempt limit"| LO["LOCKOUT"]
+    AD -->|"PERMIT"| GRANT["GRANT"]
+    AD -->|"DENY / INDETERMINATE"| DENY
+    AD -->|"PDP timeout"| DG["DEGRADED"]
+    DG -->|"cache hit"| GRANT
+    DG -->|"cache miss (fail-secure)"| DENY
+    GRANT -->|"open time elapsed"| RL["RELOCK"]
+    RL --> BACK(["back to IDLE"])
+    DENY --> BACK
+    LO -->|"cool-down"| BACK
+
+    classDef idle    fill:#455a75,stroke:#b8c7db,stroke-width:2px,color:#ffffff
+    classDef input   fill:#1e5aa8,stroke:#9cc3f5,stroke-width:2px,color:#ffffff
+    classDef decide  fill:#7a3fb0,stroke:#d4b3f2,stroke-width:2px,color:#ffffff
+    classDef degrade fill:#b5651d,stroke:#f2c08a,stroke-width:2px,color:#ffffff
+    classDef ok      fill:#1f7a5a,stroke:#9fe0c4,stroke-width:2px,color:#ffffff
+    classDef bad     fill:#b03a3a,stroke:#f2a9a9,stroke-width:2px,color:#ffffff
+    class S,IDLE,BACK idle
+    class CR,PE input
+    class AD decide
+    class DG degrade
+    class GRANT,RL ok
+    class DENY,LO bad
+    linkStyle default stroke-width:2px
 ```
+
+Colour key: blue = credential capture, purple = waiting on the PDP, amber = offline fallback, green = access granted, red = denied or locked out. Every path ends by returning to IDLE.
 
 Changes from the reference locks [4, 6]:
 
