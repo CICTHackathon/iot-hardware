@@ -50,7 +50,7 @@ flowchart LR
     C -- "clips · events" --> L
     W <--> A
     W <--> C
-    P <---> D
+    P <-->|"attribute lookup"| D
 
     classDef edge     fill:#1e5aa8,stroke:#9cc3f5,stroke-width:2px,color:#ffffff
     classDef decision fill:#7a3fb0,stroke:#d4b3f2,stroke-width:2px,color:#ffffff
@@ -137,7 +137,7 @@ sh schematic/schematic.sh   # regenerate after any pin change
 A deterministic finite-state machine with no dynamic allocation and no blocking network I/O, so the time from card presentation to actuation has a fixed upper bound.
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 35, "rankSpacing": 70}}}%%
+%%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"curve": "linear", "nodeSpacing": 20, "rankSpacing": 30, "padding": 18}}}%%
 flowchart LR
     S(("start")) --> IDLE["IDLE"]
     IDLE -->|"ISO14443A UID"| CR["CARD_READ"]
@@ -156,12 +156,12 @@ flowchart LR
     DENY --> BACK
     LO -->|"cool-down"| BACK
 
-    classDef idle    fill:#455a75,stroke:#b8c7db,stroke-width:2px,color:#ffffff
-    classDef input   fill:#1e5aa8,stroke:#9cc3f5,stroke-width:2px,color:#ffffff
-    classDef decide  fill:#7a3fb0,stroke:#d4b3f2,stroke-width:2px,color:#ffffff
-    classDef degrade fill:#b5651d,stroke:#f2c08a,stroke-width:2px,color:#ffffff
-    classDef ok      fill:#1f7a5a,stroke:#9fe0c4,stroke-width:2px,color:#ffffff
-    classDef bad     fill:#b03a3a,stroke:#f2a9a9,stroke-width:2px,color:#ffffff
+    classDef idle    fill:#455a75,stroke:#b8c7db,stroke-width:2px,color:#ffffff,font-size:20px
+    classDef input   fill:#1e5aa8,stroke:#9cc3f5,stroke-width:2px,color:#ffffff,font-size:20px
+    classDef decide  fill:#7a3fb0,stroke:#d4b3f2,stroke-width:2px,color:#ffffff,font-size:20px
+    classDef degrade fill:#b5651d,stroke:#f2c08a,stroke-width:2px,color:#ffffff,font-size:20px
+    classDef ok      fill:#1f7a5a,stroke:#9fe0c4,stroke-width:2px,color:#ffffff,font-size:20px
+    classDef bad     fill:#b03a3a,stroke:#f2a9a9,stroke-width:2px,color:#ffffff,font-size:20px
     class S,IDLE,BACK idle
     class CR,PE input
     class AD decide
